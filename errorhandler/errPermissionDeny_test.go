@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrPermissionDenySuite) SetupTest() {
 }
 
 func (suite *ErrPermissionDenySuite) TestNewErrPermissionDeny() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrPermissionDeny", reflect.TypeOf(NewErrPermissionDeny(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrPermissionDeny", reflect.TypeOf(NewErrPermissionDeny(errors.New("got error"))).String())
 }
 
 func (suite *ErrPermissionDenySuite) TestNewErrPermissionDenyGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrProcessPermissionDeny, NewErrPermissionDeny(errors.New("got error")).GetName())
+	suite.Equal(ErrProcessPermissionDeny, NewErrPermissionDeny(errors.New("got error")).GetName())
 }
 
 func (suite *ErrPermissionDenySuite) TestNewErrPermissionDenyGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrPermissionDeny(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrPermissionDeny(errors.New("got error")).GetError())
 }
 
 func (suite *ErrPermissionDenySuite) TestNewErrPermissionDenyImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrPermissionDeny(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrPermissionDeny(errors.New("got error")))
 }
 
 func (suite *ErrPermissionDenySuite) TestNewErrPermissionDenyErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrPermissionDeny(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrPermissionDeny(errors.New("got error")).Error())
 }
 
 func (suite *ErrPermissionDenySuite) TestNewErrPermissionDenyReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrPermissionDenySuite) TestNewErrPermissionDenyGinReportMethod() {
 }
 
 func (suite *ErrPermissionDenySuite) TestPanicGRPCErrorHandlerNewErrPermissionDeny() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrPermissionDeny(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "PermissionDenied", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = PermissionDenied desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("PermissionDenied", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = PermissionDenied desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 

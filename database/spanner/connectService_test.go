@@ -6,7 +6,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/justdomepaul/toolbox/config"
 	"github.com/prashantv/gostub"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -28,7 +27,6 @@ type ConnectServiceSuite struct {
 }
 
 func (suite *ConnectServiceSuite) TestNewSession() {
-	t := suite.T()
 	defer gostub.StubFunc(&newClient, &spanner.Client{}, nil).Reset()
 
 	option := config.Spanner{}
@@ -36,32 +34,30 @@ func (suite *ConnectServiceSuite) TestNewSession() {
 	option.WithoutAuthentication = true
 	option.GRPCInsecure = true
 	_, errSession := NewSession(context.Background(), option)
-	assert.NoError(t, errSession)
+	suite.NoError(errSession)
 }
 
 func (suite *ConnectServiceSuite) TestNewExtendSpannerDatabase() {
-	t := suite.T()
 	defer gostub.StubFunc(&NewSession, new(testISession), nil).Reset()
 	option := config.Spanner{}
 	suite.NoError(config.LoadFromEnv(&option))
 	result, fn, err := NewExtendSpannerDatabase(
 		zap.NewExample(),
 		option)
-	assert.NoError(t, err)
+	suite.NoError(err)
 	defer fn()
-	assert.Equal(t, "*spanner.testISession", reflect.TypeOf(result).String())
-	assert.Equal(t, "func()", reflect.TypeOf(fn).String())
+	suite.Equal("*spanner.testISession", reflect.TypeOf(result).String())
+	suite.Equal("func()", reflect.TypeOf(fn).String())
 }
 
 func (suite *ConnectServiceSuite) TestNewExtendSpannerDatabaseNewSessionError() {
-	t := suite.T()
 	defer gostub.StubFunc(&NewSession, new(testISession), errors.New("got error")).Reset()
 	option := config.Spanner{}
 	suite.NoError(config.LoadFromEnv(&option))
 	_, _, errExtendSpannerDatabase := NewExtendSpannerDatabase(
 		zap.NewExample(),
 		option)
-	assert.Error(t, errExtendSpannerDatabase)
+	suite.Error(errExtendSpannerDatabase)
 }
 
 func TestConnectServiceSuite(t *testing.T) {

@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrVariableSuite) SetupTest() {
 }
 
 func (suite *ErrVariableSuite) TestNewErrVariable() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrVariable", reflect.TypeOf(NewErrVariable(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrVariable", reflect.TypeOf(NewErrVariable(errors.New("got error"))).String())
 }
 
 func (suite *ErrVariableSuite) TestNewErrVariableGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrProcessVariable, NewErrVariable(errors.New("got error")).GetName())
+	suite.Equal(ErrProcessVariable, NewErrVariable(errors.New("got error")).GetName())
 }
 
 func (suite *ErrVariableSuite) TestNewErrVariableGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrVariable(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrVariable(errors.New("got error")).GetError())
 }
 
 func (suite *ErrVariableSuite) TestNewErrVariableImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrVariable(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrVariable(errors.New("got error")))
 }
 
 func (suite *ErrVariableSuite) TestNewErrVariableErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrVariable(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrVariable(errors.New("got error")).Error())
 }
 
 func (suite *ErrVariableSuite) TestNewErrVariableReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrVariableSuite) TestNewErrVariableGinReportMethod() {
 }
 
 func (suite *ErrVariableSuite) TestPanicGRPCErrorHandlerNewErrVariable() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrVariable(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "InvalidArgument", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = InvalidArgument desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("InvalidArgument", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = InvalidArgument desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 

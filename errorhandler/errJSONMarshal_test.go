@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrJSONMarshalSuite) SetupTest() {
 }
 
 func (suite *ErrJSONMarshalSuite) TestNewErrJSONMarshal() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrJSONMarshal", reflect.TypeOf(NewErrJSONMarshal(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrJSONMarshal", reflect.TypeOf(NewErrJSONMarshal(errors.New("got error"))).String())
 }
 
 func (suite *ErrJSONMarshalSuite) TestNewErrJSONMarshalGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrJsonMarshal, NewErrJSONMarshal(errors.New("got error")).GetName())
+	suite.Equal(ErrJsonMarshal, NewErrJSONMarshal(errors.New("got error")).GetName())
 }
 
 func (suite *ErrJSONMarshalSuite) TestNewErrJSONMarshalGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrJSONMarshal(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrJSONMarshal(errors.New("got error")).GetError())
 }
 
 func (suite *ErrJSONMarshalSuite) TestNewErrJSONMarshalImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrJSONMarshal(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrJSONMarshal(errors.New("got error")))
 }
 
 func (suite *ErrJSONMarshalSuite) TestNewErrJSONMarshalErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrJSONMarshal(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrJSONMarshal(errors.New("got error")).Error())
 }
 
 func (suite *ErrJSONMarshalSuite) TestNewErrJSONMarshalReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrJSONMarshalSuite) TestNewErrJSONMarshalGinReportMethod() {
 }
 
 func (suite *ErrJSONMarshalSuite) TestPanicGRPCErrorHandlerNewErrJSONMarshal() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrJSONMarshal(errors.New("json marshal disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "InvalidArgument", s.Code().String())
-		assert.Equal(t, "Test error handler: json marshal disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = InvalidArgument desc = Test error handler: json marshal disconnect", s.Err().Error())
+		suite.Equal("InvalidArgument", s.Code().String())
+		suite.Equal("Test error handler: json marshal disconnect", s.Message())
+		suite.Equal("rpc error: code = InvalidArgument desc = Test error handler: json marshal disconnect", s.Err().Error())
 	}
 }
 

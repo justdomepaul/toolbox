@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrGRPCExecuteSuite) SetupTest() {
 }
 
 func (suite *ErrGRPCExecuteSuite) TestNewErrGRPCExecute() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrGRPCExecute", reflect.TypeOf(NewErrGRPCExecute(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrGRPCExecute", reflect.TypeOf(NewErrGRPCExecute(errors.New("got error"))).String())
 }
 
 func (suite *ErrGRPCExecuteSuite) TestNewErrGRPCExecuteGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrGrpcExecute, NewErrGRPCExecute(errors.New("got error")).GetName())
+	suite.Equal(ErrGrpcExecute, NewErrGRPCExecute(errors.New("got error")).GetName())
 }
 
 func (suite *ErrGRPCExecuteSuite) TestNewErrGRPCExecuteGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrGRPCExecute(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrGRPCExecute(errors.New("got error")).GetError())
 }
 
 func (suite *ErrGRPCExecuteSuite) TestNewErrGRPCExecuteImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrGRPCExecute(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrGRPCExecute(errors.New("got error")))
 }
 
 func (suite *ErrGRPCExecuteSuite) TestNewErrGRPCExecuteErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrGRPCExecute(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrGRPCExecute(errors.New("got error")).Error())
 }
 
 func (suite *ErrGRPCExecuteSuite) TestNewErrGRPCExecuteReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrGRPCExecuteSuite) TestNewErrGRPCExecuteGinReportMethod() {
 }
 
 func (suite *ErrGRPCExecuteSuite) TestPanicGRPCErrorHandlerNewErrGRPCExecute() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrGRPCExecute(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "FailedPrecondition", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = FailedPrecondition desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("FailedPrecondition", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = FailedPrecondition desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 

@@ -6,7 +6,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/justdomepaul/toolbox/config"
 	"github.com/prashantv/gostub"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -29,7 +28,6 @@ type ConnectServiceSuite struct {
 }
 
 func (suite *ConnectServiceSuite) TestNewSession() {
-	t := suite.T()
 	defer gostub.StubFunc(&newClient, &storage.Client{}, nil).Reset()
 
 	option := config.Cloud{}
@@ -37,31 +35,29 @@ func (suite *ConnectServiceSuite) TestNewSession() {
 	option.WithoutAuthentication = true
 	option.GRPCInsecure = true
 	_, errSession := NewSession(context.Background(), option)
-	assert.NoError(t, errSession)
+	suite.NoError(errSession)
 }
 
 func (suite *ConnectServiceSuite) TestNewExtendStorageDatabase() {
-	t := suite.T()
 	option := config.Cloud{}
 	suite.NoError(config.LoadFromEnv(&option))
 	result, fn, err := NewExtendStorageDatabase(
 		zap.NewExample(),
 		option)
-	assert.NoError(t, err)
+	suite.NoError(err)
 	defer fn()
-	assert.Equal(t, "*storage.Client", reflect.TypeOf(result).String())
-	assert.Equal(t, "func()", reflect.TypeOf(fn).String())
+	suite.Equal("*storage.Client", reflect.TypeOf(result).String())
+	suite.Equal("func()", reflect.TypeOf(fn).String())
 }
 
 func (suite *ConnectServiceSuite) TestNewExtendStorageDatabaseNewSessionError() {
-	t := suite.T()
 	defer gostub.StubFunc(&NewSession, &storage.Client{}, errors.New("got error")).Reset()
 	option := config.Cloud{}
 	suite.NoError(config.LoadFromEnv(&option))
 	_, _, errExtendStorageDatabase := NewExtendStorageDatabase(
 		zap.NewExample(),
 		option)
-	assert.Error(t, errExtendStorageDatabase)
+	suite.Error(errExtendStorageDatabase)
 }
 
 func TestConnectServiceSuite(t *testing.T) {

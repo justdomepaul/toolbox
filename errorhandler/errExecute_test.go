@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrExecuteSuite) SetupTest() {
 }
 
 func (suite *ErrExecuteSuite) TestNewErrExecute() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrExecute", reflect.TypeOf(NewErrExecute(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrExecute", reflect.TypeOf(NewErrExecute(errors.New("got error"))).String())
 }
 
 func (suite *ErrExecuteSuite) TestNewErrExecuteGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrProcessExecute, NewErrExecute(errors.New("got error")).GetName())
+	suite.Equal(ErrProcessExecute, NewErrExecute(errors.New("got error")).GetName())
 }
 
 func (suite *ErrExecuteSuite) TestNewErrExecuteGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrExecute(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrExecute(errors.New("got error")).GetError())
 }
 
 func (suite *ErrExecuteSuite) TestNewErrExecuteImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrExecute(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrExecute(errors.New("got error")))
 }
 
 func (suite *ErrExecuteSuite) TestNewErrExecuteErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrExecute(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrExecute(errors.New("got error")).Error())
 }
 
 func (suite *ErrExecuteSuite) TestNewErrExecuteReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrExecuteSuite) TestNewErrExecuteGinReportMethod() {
 }
 
 func (suite *ErrExecuteSuite) TestPanicGRPCErrorHandlerNewErrExecute() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrExecute(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "FailedPrecondition", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = FailedPrecondition desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("FailedPrecondition", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = FailedPrecondition desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 

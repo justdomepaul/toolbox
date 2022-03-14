@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrDBRowNotFoundSuite) SetupTest() {
 }
 
 func (suite *ErrDBRowNotFoundSuite) TestNewErrDBRowNotFound() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrDBRowNotFound", reflect.TypeOf(NewErrDBRowNotFound(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrDBRowNotFound", reflect.TypeOf(NewErrDBRowNotFound(errors.New("got error"))).String())
 }
 
 func (suite *ErrDBRowNotFoundSuite) TestNewErrDBRowNotFoundGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrDbRowNotFound, NewErrDBRowNotFound(errors.New("got error")).GetName())
+	suite.Equal(ErrDbRowNotFound, NewErrDBRowNotFound(errors.New("got error")).GetName())
 }
 
 func (suite *ErrDBRowNotFoundSuite) TestNewErrDBRowNotFoundGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrDBRowNotFound(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrDBRowNotFound(errors.New("got error")).GetError())
 }
 
 func (suite *ErrDBRowNotFoundSuite) TestNewErrDBRowNotFoundImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrDBRowNotFound(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrDBRowNotFound(errors.New("got error")))
 }
 
 func (suite *ErrDBRowNotFoundSuite) TestNewErrDBRowNotFoundErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrDBRowNotFound(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrDBRowNotFound(errors.New("got error")).Error())
 }
 
 func (suite *ErrDBRowNotFoundSuite) TestNewErrDBRowNotFoundReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrDBRowNotFoundSuite) TestNewErrDBRowNotFoundGinReportMethod() {
 }
 
 func (suite *ErrDBRowNotFoundSuite) TestPanicGRPCErrorHandlerNewErrDBRowNotFound() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrDBRowNotFound(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "NotFound", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = NotFound desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("NotFound", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = NotFound desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 

@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -46,8 +45,6 @@ func (suite *GinHandlerSuite) TestGinPanicErrorHandler() {
 }
 
 func (suite *GinHandlerSuite) TestGinPanicErrorHandlerNormalError() {
-	t := suite.T()
-
 	gin.SetMode(gin.ReleaseMode)
 	route := gin.New()
 	route.Use(gin.Logger(), GinPanicErrorHandler("Mock Gin", "error Gin mock"))
@@ -59,12 +56,10 @@ func (suite *GinHandlerSuite) TestGinPanicErrorHandlerNormalError() {
 	route.ServeHTTP(w, req)
 	result := w.Result()
 	defer result.Body.Close()
-	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	suite.Equal(http.StatusInternalServerError, result.StatusCode)
 }
 
 func (suite *GinHandlerSuite) TestGinPanicErrorHandlerStringError() {
-	t := suite.T()
-
 	gin.SetMode(gin.ReleaseMode)
 	route := gin.New()
 	route.Use(gin.Logger(), GinPanicErrorHandler("Mock Gin", "error Gin mock"))
@@ -76,7 +71,7 @@ func (suite *GinHandlerSuite) TestGinPanicErrorHandlerStringError() {
 	route.ServeHTTP(w, req)
 	result := w.Result()
 	defer result.Body.Close()
-	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	suite.Equal(http.StatusInternalServerError, result.StatusCode)
 }
 
 func TestGinHandlerSuite(t *testing.T) {

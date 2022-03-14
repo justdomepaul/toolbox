@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrInvalidArgumentSuite) SetupTest() {
 }
 
 func (suite *ErrInvalidArgumentSuite) TestNewErrInvalidArgument() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrInvalidArgument", reflect.TypeOf(NewErrInvalidArgument(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrInvalidArgument", reflect.TypeOf(NewErrInvalidArgument(errors.New("got error"))).String())
 }
 
 func (suite *ErrInvalidArgumentSuite) TestNewErrInvalidArgumentGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrProcessInvalidArgument, NewErrInvalidArgument(errors.New("got error")).GetName())
+	suite.Equal(ErrProcessInvalidArgument, NewErrInvalidArgument(errors.New("got error")).GetName())
 }
 
 func (suite *ErrInvalidArgumentSuite) TestNewErrInvalidArgumentGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrInvalidArgument(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrInvalidArgument(errors.New("got error")).GetError())
 }
 
 func (suite *ErrInvalidArgumentSuite) TestNewErrInvalidArgumentImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrInvalidArgument(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrInvalidArgument(errors.New("got error")))
 }
 
 func (suite *ErrInvalidArgumentSuite) TestNewErrInvalidArgumentErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrInvalidArgument(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrInvalidArgument(errors.New("got error")).Error())
 }
 
 func (suite *ErrInvalidArgumentSuite) TestNewErrInvalidArgumentReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrInvalidArgumentSuite) TestNewErrInvalidArgumentGinReportMethod()
 }
 
 func (suite *ErrInvalidArgumentSuite) TestPanicGRPCErrorHandlerNewErrInvalidArgument() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrInvalidArgument(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "InvalidArgument", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = InvalidArgument desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("InvalidArgument", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = InvalidArgument desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 

@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrAuthenticateSuite) SetupTest() {
 }
 
 func (suite *ErrAuthenticateSuite) TestNewErrAuthenticate() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrAuthenticate", reflect.TypeOf(NewErrAuthenticate(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrAuthenticate", reflect.TypeOf(NewErrAuthenticate(errors.New("got error"))).String())
 }
 
 func (suite *ErrAuthenticateSuite) TestNewErrAuthenticateGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrProcessAuthenticate, NewErrAuthenticate(errors.New("got error")).GetName())
+	suite.Equal(ErrProcessAuthenticate, NewErrAuthenticate(errors.New("got error")).GetName())
 }
 
 func (suite *ErrAuthenticateSuite) TestNewErrAuthenticateGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrAuthenticate(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrAuthenticate(errors.New("got error")).GetError())
 }
 
 func (suite *ErrAuthenticateSuite) TestNewErrAuthenticateImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrAuthenticate(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrAuthenticate(errors.New("got error")))
 }
 
 func (suite *ErrAuthenticateSuite) TestNewErrAuthenticateErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrAuthenticate(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrAuthenticate(errors.New("got error")).Error())
 }
 
 func (suite *ErrAuthenticateSuite) TestNewErrAuthenticateReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrAuthenticateSuite) TestNewErrAuthenticateGinReportMethod() {
 }
 
 func (suite *ErrAuthenticateSuite) TestPanicGRPCErrorHandlerNewErrAuthenticate() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrAuthenticate(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "Unauthenticated", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = Unauthenticated desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("Unauthenticated", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = Unauthenticated desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 

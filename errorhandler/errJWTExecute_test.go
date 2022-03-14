@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrJWTExecuteSuite) SetupTest() {
 }
 
 func (suite *ErrJWTExecuteSuite) TestNewErrJWTExecute() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrJWTExecute", reflect.TypeOf(NewErrJWTExecute(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrJWTExecute", reflect.TypeOf(NewErrJWTExecute(errors.New("got error"))).String())
 }
 
 func (suite *ErrJWTExecuteSuite) TestNewErrJWTExecuteGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrJwtExecute, NewErrJWTExecute(errors.New("got error")).GetName())
+	suite.Equal(ErrJwtExecute, NewErrJWTExecute(errors.New("got error")).GetName())
 }
 
 func (suite *ErrJWTExecuteSuite) TestNewErrJWTExecuteGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrJWTExecute(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrJWTExecute(errors.New("got error")).GetError())
 }
 
 func (suite *ErrJWTExecuteSuite) TestNewErrJWTExecuteImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrJWTExecute(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrJWTExecute(errors.New("got error")))
 }
 
 func (suite *ErrJWTExecuteSuite) TestNewErrJWTExecuteErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrJWTExecute(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrJWTExecute(errors.New("got error")).Error())
 }
 
 func (suite *ErrJWTExecuteSuite) TestNewErrJWTExecuteReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrJWTExecuteSuite) TestNewErrJWTExecuteGinReportMethod() {
 }
 
 func (suite *ErrJWTExecuteSuite) TestPanicGRPCErrorHandlerNewErrJWTExecute() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrJWTExecute(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "PermissionDenied", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = PermissionDenied desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("PermissionDenied", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = PermissionDenied desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 

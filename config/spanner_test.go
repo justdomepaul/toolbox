@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"strconv"
@@ -19,7 +18,6 @@ type SpannerSuite struct {
 }
 
 func (suite *SpannerSuite) SetupSuite() {
-	t := suite.T()
 	os.Clearenv()
 	suite.ProjectID = "testProjectID"
 	suite.Instance = "testInstance"
@@ -28,25 +26,24 @@ func (suite *SpannerSuite) SetupSuite() {
 	suite.WithoutAuthentication = true
 	suite.GRPCInsecure = true
 
-	assert.NoError(t, os.Setenv("PROJECT_ID", suite.ProjectID))
-	assert.NoError(t, os.Setenv("INSTANCE", suite.Instance))
-	assert.NoError(t, os.Setenv("DATABASE", suite.Database))
-	assert.NoError(t, os.Setenv("END_POINT", suite.EndPoint))
-	assert.NoError(t, os.Setenv("WITHOUT_AUTHENTICATION", strconv.FormatBool(suite.WithoutAuthentication)))
-	assert.NoError(t, os.Setenv("GRPC_INSECURE", strconv.FormatBool(suite.GRPCInsecure)))
+	suite.NoError(os.Setenv("PROJECT_ID", suite.ProjectID))
+	suite.NoError(os.Setenv("INSTANCE", suite.Instance))
+	suite.NoError(os.Setenv("DATABASE", suite.Database))
+	suite.NoError(os.Setenv("END_POINT", suite.EndPoint))
+	suite.NoError(os.Setenv("WITHOUT_AUTHENTICATION", strconv.FormatBool(suite.WithoutAuthentication)))
+	suite.NoError(os.Setenv("GRPC_INSECURE", strconv.FormatBool(suite.GRPCInsecure)))
 
 }
 
 func (suite *SpannerSuite) TestDefaultOption() {
-	t := suite.T()
 	spanner := &Spanner{}
 	suite.NoError(LoadFromEnv(spanner))
-	assert.Equal(t, suite.ProjectID, spanner.ProjectID)
-	assert.Equal(t, suite.Instance, spanner.Instance)
-	assert.Equal(t, suite.Database, spanner.Database)
-	assert.Equal(t, suite.EndPoint, spanner.EndPoint)
-	assert.Equal(t, suite.WithoutAuthentication, spanner.WithoutAuthentication)
-	assert.Equal(t, suite.GRPCInsecure, spanner.GRPCInsecure)
+	suite.Equal(suite.ProjectID, spanner.ProjectID)
+	suite.Equal(suite.Instance, spanner.Instance)
+	suite.Equal(suite.Database, spanner.Database)
+	suite.Equal(suite.EndPoint, spanner.EndPoint)
+	suite.Equal(suite.WithoutAuthentication, spanner.WithoutAuthentication)
+	suite.Equal(suite.GRPCInsecure, spanner.GRPCInsecure)
 }
 
 func TestSpannerSuite(t *testing.T) {

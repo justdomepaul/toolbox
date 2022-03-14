@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrDBConnectionSuite) SetupTest() {
 }
 
 func (suite *ErrDBConnectionSuite) TestNewErrDBConnection() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrDBConnection", reflect.TypeOf(NewErrDBConnection(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrDBConnection", reflect.TypeOf(NewErrDBConnection(errors.New("got error"))).String())
 }
 
 func (suite *ErrDBConnectionSuite) TestNewErrDBConnectionGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrDbConnection, NewErrDBConnection(errors.New("got error")).GetName())
+	suite.Equal(ErrDbConnection, NewErrDBConnection(errors.New("got error")).GetName())
 }
 
 func (suite *ErrDBConnectionSuite) TestNewErrDBConnectionGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrDBConnection(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrDBConnection(errors.New("got error")).GetError())
 }
 
 func (suite *ErrDBConnectionSuite) TestNewErrDBConnectionImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrDBConnection(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrDBConnection(errors.New("got error")))
 }
 
 func (suite *ErrDBConnectionSuite) TestNewErrDBConnectionErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrDBConnection(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrDBConnection(errors.New("got error")).Error())
 }
 
 func (suite *ErrDBConnectionSuite) TestNewErrDBConnectionReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrDBConnectionSuite) TestNewErrDBConnectionGinReportMethod() {
 }
 
 func (suite *ErrDBConnectionSuite) TestPanicGRPCErrorHandlerNewErrDBConnection() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrDBConnection(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "Unavailable", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = Unavailable desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("Unavailable", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = Unavailable desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"strconv"
@@ -16,23 +15,21 @@ type CoreSuite struct {
 }
 
 func (suite *CoreSuite) SetupSuite() {
-	t := suite.T()
 	os.Clearenv()
 	suite.LoggerMode = "debug"
 	suite.ReleaseMode = true
 	suite.SystemName = "system"
-	assert.NoError(t, os.Setenv("LOGGER_MODE", suite.LoggerMode))
-	assert.NoError(t, os.Setenv("RELEASE_MODE", strconv.FormatBool(suite.ReleaseMode)))
-	assert.NoError(t, os.Setenv("SYSTEM_NAME", suite.SystemName))
+	suite.NoError(os.Setenv("LOGGER_MODE", suite.LoggerMode))
+	suite.NoError(os.Setenv("RELEASE_MODE", strconv.FormatBool(suite.ReleaseMode)))
+	suite.NoError(os.Setenv("SYSTEM_NAME", suite.SystemName))
 }
 
 func (suite *CoreSuite) TestDefaultOption() {
-	t := suite.T()
 	core := &Core{}
 	suite.NoError(LoadFromEnv(core))
-	assert.Equal(t, suite.LoggerMode, core.LoggerMode)
-	assert.Equal(t, suite.ReleaseMode, core.ReleaseMode)
-	assert.Equal(t, suite.SystemName, core.SystemName)
+	suite.Equal(suite.LoggerMode, core.LoggerMode)
+	suite.Equal(suite.ReleaseMode, core.ReleaseMode)
+	suite.Equal(suite.SystemName, core.SystemName)
 }
 
 func TestCoreSuite(t *testing.T) {

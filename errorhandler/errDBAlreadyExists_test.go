@@ -3,7 +3,6 @@ package errorhandler
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -27,28 +26,23 @@ func (suite *ErrDBAlreadyExistsSuite) SetupTest() {
 }
 
 func (suite *ErrDBAlreadyExistsSuite) TestNewErrDBAlreadyExists() {
-	t := suite.T()
-	assert.Equal(t, "*errorhandler.ErrDBAlreadyExists", reflect.TypeOf(NewErrDBAlreadyExists(errors.New("got error"))).String())
+	suite.Equal("*errorhandler.ErrDBAlreadyExists", reflect.TypeOf(NewErrDBAlreadyExists(errors.New("got error"))).String())
 }
 
 func (suite *ErrDBAlreadyExistsSuite) TestNewErrDBAlreadyExistsGetNameMethod() {
-	t := suite.T()
-	assert.Equal(t, ErrDbAlreadyExists, NewErrDBAlreadyExists(errors.New("got error")).GetName())
+	suite.Equal(ErrDbAlreadyExists, NewErrDBAlreadyExists(errors.New("got error")).GetName())
 }
 
 func (suite *ErrDBAlreadyExistsSuite) TestNewErrDBAlreadyExistsGetErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, errors.New("got error"), NewErrDBAlreadyExists(errors.New("got error")).GetError())
+	suite.Equal(errors.New("got error"), NewErrDBAlreadyExists(errors.New("got error")).GetError())
 }
 
 func (suite *ErrDBAlreadyExistsSuite) TestNewErrDBAlreadyExistsImplementError() {
-	t := suite.T()
-	assert.Implements(t, (*error)(nil), NewErrDBAlreadyExists(errors.New("got error")))
+	suite.Implements((*error)(nil), NewErrDBAlreadyExists(errors.New("got error")))
 }
 
 func (suite *ErrDBAlreadyExistsSuite) TestNewErrDBAlreadyExistsErrorMethod() {
-	t := suite.T()
-	assert.Equal(t, "[ERROR]: got error\n", NewErrDBAlreadyExists(errors.New("got error")).Error())
+	suite.Equal("[ERROR]: got error\n", NewErrDBAlreadyExists(errors.New("got error")).Error())
 }
 
 func (suite *ErrDBAlreadyExistsSuite) TestNewErrDBAlreadyExistsReportMethod() {
@@ -82,17 +76,16 @@ func (suite *ErrDBAlreadyExistsSuite) TestNewErrDBAlreadyExistsGinReportMethod()
 }
 
 func (suite *ErrDBAlreadyExistsSuite) TestPanicGRPCErrorHandlerNewErrDBAlreadyExists() {
-	t := suite.T()
 	var errContent error
 	func() {
 		defer PanicGRPCErrorHandler(&errContent, "MockGRPCHandler", "Test error handler")
 		panic(NewErrDBAlreadyExists(errors.New("database disconnect")))
 	}()
-	assert.Error(t, errContent)
+	suite.Error(errContent)
 	if s, ok := status.FromError(errContent); ok {
-		assert.Equal(t, "AlreadyExists", s.Code().String())
-		assert.Equal(t, "Test error handler: database disconnect", s.Message())
-		assert.Equal(t, "rpc error: code = AlreadyExists desc = Test error handler: database disconnect", s.Err().Error())
+		suite.Equal("AlreadyExists", s.Code().String())
+		suite.Equal("Test error handler: database disconnect", s.Message())
+		suite.Equal("rpc error: code = AlreadyExists desc = Test error handler: database disconnect", s.Err().Error())
 	}
 }
 
