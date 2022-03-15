@@ -63,6 +63,33 @@ func setupMockedTestServerWithConfigAndClientOptions(t *testing.T, config spanne
 	}
 }
 
+type mockBatchMutate struct {
+	BAR int `spanner:"BAR" json:"BAR,omitempty"`
+}
+
+type BatchMutateSuite struct {
+	suite.Suite
+}
+
+func (suite *BatchMutateSuite) TestBatchMutate() {
+	ctx := context.Background()
+	_, client, teardown := setupMockedTestServer(suite.T())
+	defer teardown()
+
+	var inputs []mockBatchMutate
+	for i := 1; i < 20000; i++ {
+		inputs = append(inputs, mockBatchMutate{
+			BAR: i,
+		})
+	}
+
+	suite.NoError(BatchMutate(ctx, client, inputs, "FOO", []string{"BAR"}))
+}
+
+func TestBatchMutateSuite(t *testing.T) {
+	suite.Run(t, new(BatchMutateSuite))
+}
+
 type templateSpannerMock struct {
 	ID           gocql.UUID `spanner:"id" json:"id"`
 	PartyToken   string     `spanner:"party_token" json:"party_token"`
@@ -72,11 +99,11 @@ type templateSpannerMock struct {
 	CreatedTime  int64      `spanner:"created_time" json:"created_time"`
 }
 
-type SpannerColumnSuite struct {
+type FetchSpannerTagValueSuite struct {
 	suite.Suite
 }
 
-func (suite *SpannerColumnSuite) TestGetColumns() {
+func (suite *FetchSpannerTagValueSuite) TestGetColumns() {
 	id := gocql.TimeUUID()
 	columns, placeholder, params := FetchSpannerTagValue(templateSpannerMock{
 		ID:           id,
@@ -98,7 +125,7 @@ func (suite *SpannerColumnSuite) TestGetColumns() {
 	suite.T().Log(params)
 }
 
-func (suite *SpannerColumnSuite) TestGetColumns1() {
+func (suite *FetchSpannerTagValueSuite) TestGetColumns1() {
 	columns, placeholder, params := FetchSpannerTagValue(templateSpannerMock{
 		ID:         gocql.TimeUUID(),
 		PartyToken: "testPlatformToken",
@@ -108,7 +135,7 @@ func (suite *SpannerColumnSuite) TestGetColumns1() {
 	suite.T().Log(params)
 }
 
-func (suite *SpannerColumnSuite) TestGetColumns2() {
+func (suite *FetchSpannerTagValueSuite) TestGetColumns2() {
 	columns, placeholder, params := FetchSpannerTagValue(templateSpannerMock{
 		ID:           gocql.TimeUUID(),
 		PartyToken:   "testPlatformToken",
@@ -119,7 +146,7 @@ func (suite *SpannerColumnSuite) TestGetColumns2() {
 	suite.T().Log(params)
 }
 
-func (suite *SpannerColumnSuite) TestGetColumns3() {
+func (suite *FetchSpannerTagValueSuite) TestGetColumns3() {
 	columns, placeholder, params := FetchSpannerTagValue(templateSpannerMock{
 		ID:           gocql.TimeUUID(),
 		PartyToken:   "testPlatformToken",
@@ -131,8 +158,8 @@ func (suite *SpannerColumnSuite) TestGetColumns3() {
 	suite.T().Log(params)
 }
 
-func TestSpannerColumnSuite(t *testing.T) {
-	suite.Run(t, new(SpannerColumnSuite))
+func TestFetchSpannerTagValueSuite(t *testing.T) {
+	suite.Run(t, new(FetchSpannerTagValueSuite))
 }
 
 type MockSpannerIterator struct {

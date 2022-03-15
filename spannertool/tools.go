@@ -3,15 +3,106 @@ package spannertool
 import (
 	"cloud.google.com/go/spanner"
 	"context"
+	"fmt"
 	"github.com/cockroachdb/errors"
+	spannerSession "github.com/justdomepaul/toolbox/database/spanner"
 	"github.com/justdomepaul/toolbox/errorhandler"
 	"github.com/justdomepaul/toolbox/stringtool"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"math"
 	"reflect"
 	"strings"
+	"sync"
 )
+
+const (
+	MaxMutations = 20000
+	MaxPartition = 32
+)
+
+func BatchMutate[T comparable](
+	ctx context.Context,
+	session spannerSession.ISession,
+	inputs []T,
+	inputTable string,
+	inputColumns []string,
+) error {
+	var (
+		totalInputs = len(inputs)
+		wg          = &sync.WaitGroup{}
+		mu          = &sync.Mutex{}
+		errContents []error
+	)
+	inputLen_ := math.Ceil(float64(len(inputs)) / MaxPartition)
+	inputLen := int(inputLen_)
+
+	for inputStart := 0; inputStart < totalInputs; inputStart += inputLen {
+		inputEnd := inputStart + inputLen
+		if inputEnd > totalInputs {
+			inputEnd = totalInputs
+		}
+		wg.Add(1)
+		go func(m *sync.Mutex, w *sync.WaitGroup, entities []T, table string, columns []string) {
+			defer func() {
+				w.Done()
+				if e := recover(); e != nil {
+					if er, ok := e.(error); ok {
+						m.Lock()
+						errContents = append(errContents, er)
+						m.Unlock()
+					} else {
+						m.Lock()
+						errContents = append(errContents, fmt.Errorf("%v", e))
+						m.Unlock()
+					}
+				}
+			}()
+			_, err := session.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
+				perMutations := MaxMutations / len(columns)
+				totalEntity := len(entities)
+				for start := 0; start < totalEntity; start += perMutations {
+					var mut []*spanner.Mutation
+					end := start + perMutations
+					if end > totalEntity {
+						end = totalEntity
+					}
+					for _, item := range entities[start:end] {
+						prepareMut, err := spanner.InsertOrUpdateStruct(table, item)
+						if err != nil {
+							return err
+						}
+						mut = append(mut, prepareMut)
+					}
+					if err := txn.BufferWrite(mut); err != nil {
+						return err
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				panic(err)
+			}
+		}(mu, wg, inputs[inputStart:inputEnd], inputTable, inputColumns)
+	}
+
+	wg.Wait()
+	if len(errContents) == 0 {
+		return nil
+	}
+	var errContent error
+	for _, errItem := range errContents {
+		if status.Code(errItem) == codes.AlreadyExists {
+			errItem = fmt.Errorf("%w: %s", errorhandler.ErrAlreadyExists, errItem.Error())
+		}
+		if err := errors.Wrap(errContent, errItem.Error()); err != nil {
+			return err
+		}
+	}
+
+	return errContent
+}
 
 type Columns []string
 
