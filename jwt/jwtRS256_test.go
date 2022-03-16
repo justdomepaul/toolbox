@@ -6,7 +6,6 @@ import (
 	"github.com/prashantv/gostub"
 	"github.com/square/go-jose/v3/jwt"
 	"github.com/stretchr/testify/suite"
-	"log"
 	"testing"
 	"time"
 )
@@ -15,6 +14,7 @@ type JWTRS256Suite struct {
 	suite.Suite
 	key    string
 	option config.JWT
+	jwt    IJWT
 }
 
 func (suite *JWTRS256Suite) SetupTest() {
@@ -49,23 +49,27 @@ XC+bv1Lzxf9y+eoDUaF/Q3U4h0BW4/tUF6BWVzM6/w4Dq7dqBCd2
 	result := config.JWT{}
 	suite.NoError(config.LoadFromEnv(&result))
 	suite.option = result
+
+	j, err := NewRS256JWT(suite.key)
+	suite.NoError(err)
+	suite.jwt = j
 }
 
-func (suite *JWTRS256Suite) TestNewRS256JWT() {
+func (suite *JWTRS256Suite) TestJWT() {
 	suite.NotPanics(func() {
 		_, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
+		suite.NoError(err)
 	})
 }
 
-func (suite *JWTRS256Suite) TestNewRS256JWTFromOptions() {
+func (suite *JWTRS256Suite) TestJWTFromOptions() {
 	suite.NotPanics(func() {
 		_, err := NewRS256JWTFromOptions(suite.option)
 		suite.NoError(err)
 	})
 }
 
-func (suite *JWTRS256Suite) TestNewRS256JWTFromOptionsAllNoOption() {
+func (suite *JWTRS256Suite) TestJWTFromOptionsAllNoOption() {
 	suite.NotPanics(func() {
 		_, err := NewRS256JWTFromOptions(config.JWT{
 			RsaPrivateKeyPath: "",
@@ -75,7 +79,7 @@ func (suite *JWTRS256Suite) TestNewRS256JWTFromOptionsAllNoOption() {
 	})
 }
 
-func (suite *JWTRS256Suite) TestNewRS256JWTFromOptionsAllNoOptionNoFIle() {
+func (suite *JWTRS256Suite) TestJWTFromOptionsAllNoOptionNoFIle() {
 	suite.NotPanics(func() {
 		_, err := NewRS256JWTFromOptions(config.JWT{
 			RsaPrivateKeyPath: "testFile.txt",
@@ -85,7 +89,7 @@ func (suite *JWTRS256Suite) TestNewRS256JWTFromOptionsAllNoOptionNoFIle() {
 	})
 }
 
-func (suite *JWTRS256Suite) TestNewRS256JWTparseRSAPrivateKeyFromPEMError() {
+func (suite *JWTRS256Suite) TestJWTParseRSAPrivateKeyFromPEMError() {
 	defer gostub.StubFunc(&parseRSAPrivateKeyFromPEM, nil, errors.New("got error")).Reset()
 	suite.NotPanics(func() {
 		_, err := NewRS256JWT(suite.key)
@@ -93,7 +97,7 @@ func (suite *JWTRS256Suite) TestNewRS256JWTparseRSAPrivateKeyFromPEMError() {
 	})
 }
 
-func (suite *JWTRS256Suite) TestNewRS256JWTnewSignerError() {
+func (suite *JWTRS256Suite) TestJWTNewSignerError() {
 	tSigner := testSigner{}
 	defer gostub.StubFunc(&newSigner, tSigner, errors.New("got error")).Reset()
 	suite.NotPanics(func() {
@@ -102,50 +106,39 @@ func (suite *JWTRS256Suite) TestNewRS256JWTnewSignerError() {
 	})
 }
 
-func (suite *JWTRS256Suite) TestRS256JWTGenerateTokenMethod() {
+func (suite *JWTRS256Suite) TestJWTGenerateTokenMethod() {
 	suite.NotPanics(func() {
-		j, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
 		standClaims := NewClaimsBuilder().
 			WithSubject("testTopic").
 			WithIssuer("tester").
 			WithID("test001").
 			WithAudience([]string{"testerClient"}).
 			ExpiresAfter(3 * time.Second).Build()
-		//ExpiresAfter(87600 * time.Hour)
 		common := NewCommon(standClaims, WithSecret("testData"))
-		tk, errTk := j.GenerateToken(common)
+		tk, errTk := suite.jwt.GenerateToken(common)
 		suite.T().Log(tk)
-		suite.Equal(nil, errTk)
+		suite.NoError(errTk)
 		suite.NotEmpty(tk)
 	})
 }
 
-func (suite *JWTRS256Suite) TestRS256JWTValidateMethod() {
+func (suite *JWTRS256Suite) TestJWTValidateMethod() {
 	suite.NotPanics(func() {
-		j, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
-
-		suite.NoError(j.Validate(
+		suite.NoError(suite.jwt.Validate(
 			"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0ZXJDbGllbnQiLCJleHAiOjE2NDY5NjQ5NTYsImlzcyI6InRlc3RlciIsImp0aSI6InRlc3QwMDEiLCJzIjoidGVzdERhdGEiLCJzdWIiOiJ0ZXN0VG9waWMifQ.jLiy8FwQWMwEgOLaHVhZRunMuGPMX7zF9OjHsaI4zODgvu6RiVzqCpdh0rsWN33t7b327qWTzpU3r3cz_LN4wsEHVcqKd_wM-w4PtbMYzL1pOU7k8IyriEFHW8r3Zq9uynOEmBayWcsG9Dw_70xsmb2EAPT_0L8yR4quzqiTqDcqWC8h_uHycqBMw8CJhQVqiF0PqHWtoZTOGcomYnEWAIZHy7DVl-41jr7fc6jA9u1_g2EtvTP_DbwdgFawQ3ehTwkCCSGvxXdfPVvTvQJer43RRpSbqJ5ChZg4DiX83RD4F_JqQca8aaGS6kUcDdNbbqRRsLOowko3m3VO6bGPvg"))
 	})
 }
 
-func (suite *JWTRS256Suite) TestRS256JWTValidateMethodparseSignedError() {
+func (suite *JWTRS256Suite) TestJWTValidateMethodParseSignedError() {
 	suite.NotPanics(func() {
 		defer gostub.StubFunc(&parseSigned, nil, errors.New("got error")).Reset()
-		j, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
 
-		suite.Error(j.Validate(
-			"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0ZXJDbGllbnQiLCJleHAiOjE2NDY5NjQ5NTYsImlzcyI6InRlc3RlciIsImp0aSI6InRlc3QwMDEiLCJzIjoidGVzdERhdGEiLCJzdWIiOiJ0ZXN0VG9waWMifQ.jLiy8FwQWMwEgOLaHVhZRunMuGPMX7zF9OjHsaI4zODgvu6RiVzqCpdh0rsWN33t7b327qWTzpU3r3cz_LN4wsEHVcqKd_wM-w4PtbMYzL1pOU7k8IyriEFHW8r3Zq9uynOEmBayWcsG9Dw_70xsmb2EAPT_0L8yR4quzqiTqDcqWC8h_uHycqBMw8CJhQVqiF0PqHWtoZTOGcomYnEWAIZHy7DVl-41jr7fc6jA9u1_g2EtvTP_DbwdgFawQ3ehTwkCCSGvxXdfPVvTvQJer43RRpSbqJ5ChZg4DiX83RD4F_JqQca8aaGS6kUcDdNbbqRRsLOowko3m3VO6bGPvg"))
+		suite.Error(suite.jwt.Validate(""))
 	})
 }
 
-func (suite *JWTRS256Suite) TestRS256JWTParseTokenMethod() {
+func (suite *JWTRS256Suite) TestJWTVerifyTokenMethod() {
 	suite.NotPanics(func() {
-		j, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
 		standClaims := NewClaimsBuilder().
 			WithSubject("testTopic").
 			WithIssuer("tester").
@@ -153,52 +146,66 @@ func (suite *JWTRS256Suite) TestRS256JWTParseTokenMethod() {
 			WithAudience([]string{"testerClient"}).
 			ExpiresAfter(3 * time.Second).Build()
 		common := NewCommon(standClaims, WithSecret("testData"))
-		tk, errTk := j.GenerateToken(common)
-		suite.Equal(nil, errTk)
+		tk, errTk := suite.jwt.GenerateToken(common)
+		suite.NoError(errTk)
 		suite.T().Log(tk)
-		standClaimsOutput := NewClaimsBuilder().Build()
-		standCommonOutput := NewCommon(standClaimsOutput)
-		errParse := j.VerifyToken(
+		standCommonOutput := NewCommon(NewClaimsBuilder().Build())
+		errParse := suite.jwt.VerifyToken(
 			tk,
 			standCommonOutput)
-		suite.Equal(nil, errParse)
-		suite.Equal("testTopic", standClaimsOutput.Subject)
-		suite.Equal("tester", standClaimsOutput.Issuer)
-		suite.Equal("test001", standClaimsOutput.ID)
-		suite.Equal(jwt.Audience{"testerClient"}, standClaimsOutput.Audience)
-	})
-}
-
-func (suite *JWTRS256Suite) TestRS256JWTParseTokenMethodExpire() {
-	suite.NotPanics(func() {
-		j, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
-
-		standClaims := NewCommon(NewClaimsBuilder().Build())
-		errParse := j.VerifyToken(
-			"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0ZXJDbGllbnQiLCJleHAiOjE2MzMzMjAzODcsImlzcyI6InRlc3RlciIsImp0aSI6InRlc3QwMDEiLCJzIjoidGVzdERhdGEiLCJzdWIiOiJ0ZXN0VG9waWMifQ.Rc6Q6FA_Mo_WycfxQRVOktlGxoKU1BlmNMeo_Vrs1kfeSH_Ors63NhmoxAfMIGdEwOkO4kV56rLtRxRZ9ZUvyerB58QqbzeAhdRkXfwOIlc0GKSkwKuZK255akkPW0hFB7q1y839ZqukopaDRRZ7lUEmZl68t6KC63sNw2rdtHJwYkko6hQtVJsRlUJ0nREd59YHvKEMUsDcUFdTC24Kh5r3zCFG-vZC7Zl-YQsRKuZXE6wUNwOf3_RDu9rBKK1MpdE5zMv0_vlr4m7UJiMBSw22uildjh0nnD-a2ogfaCT2jwtcmi4AljStesxaUC8bjNM3MihLHv9dvC8lpkOWOw",
-			standClaims)
-		suite.Error(errParse, "token is expired")
-	})
-}
-
-func (suite *JWTRS256Suite) TestRS256JWTParseTokenMethodExpireNoExpired() {
-	suite.NotPanics(func() {
-		j, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
-
-		standClaims := NewCommon(NewClaimsBuilder().Build())
-		errParse := j.VerifyToken(
-			"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0ZXJDbGllbnQiLCJpc3MiOiJ0ZXN0ZXIiLCJqdGkiOiJ0ZXN0MDAxIiwicyI6InRlc3REYXRhIiwic3ViIjoidGVzdFRvcGljIn0.Z8XUt7p41OJ92OafiahCkPaJ-fzm25-sxcJyD4MpOSgtRfa1QfhNllzeXEeIvwe4rEn2TZcc14p5tKHUelWz2UDBzXdoBKdO7XLE63wBN7zGMj_OmVddh1YrL_gguFndjPaAkawBFVcilvXKnbBWg58ZYFehtOxAcSxLgRhFt0E8qk6l351LBtlFNPJTm7RkL6SdYq9NO9i4otGxj_L2RabRrNJxTF07BCGTxuKQIH79udxTUgoB6BQxYHYQfUzD08UjGiWie93eP7HmuYqyyb4kESifYC6mD57aOSAQQbzSFxGNVfhTjIGEiLS6OfU_LwL2rTjRoYGl_4kRYM_MqA",
-			standClaims)
 		suite.NoError(errParse)
+		suite.Equal("testTopic", standCommonOutput.Subject)
+		suite.Equal("tester", standCommonOutput.Issuer)
+		suite.Equal("test001", standCommonOutput.ID)
+		suite.Equal(jwt.Audience{"testerClient"}, standCommonOutput.Audience)
 	})
 }
 
-func (suite *JWTRS256Suite) TestRS256JWTRefreshTokenMethod() {
+func (suite *JWTRS256Suite) TestJWTVerifyTokenMethodExpire() {
 	suite.NotPanics(func() {
-		j, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
+		standClaims := NewClaimsBuilder().
+			WithSubject("testTopic").
+			WithIssuer("tester").
+			WithID("test001").
+			WithAudience([]string{"testerClient"}).
+			ExpiresAfter(-3 * time.Second).Build()
+		common := NewCommon(standClaims, WithSecret("testData"))
+		tk, errTk := suite.jwt.GenerateToken(common)
+		suite.NoError(errTk)
+		suite.T().Log(tk)
+		standCommonOutput := NewCommon(NewClaimsBuilder().Build())
+		errParse := suite.jwt.VerifyToken(
+			tk,
+			standCommonOutput)
+		suite.ErrorIs(errParse, ErrTokenExpired)
+	})
+}
+
+func (suite *JWTRS256Suite) TestJWTVerifyTokenMethodExpireNoExpired() {
+	suite.NotPanics(func() {
+		standClaims := NewClaimsBuilder().
+			WithSubject("testTopic").
+			WithIssuer("tester").
+			WithID("test001").
+			WithAudience([]string{"testerClient"}).Build()
+		common := NewCommon(standClaims, WithSecret("testData"))
+		tk, errTk := suite.jwt.GenerateToken(common)
+		suite.NoError(errTk)
+		suite.T().Log(tk)
+		standCommonOutput := NewClaimsBuilder().Build()
+		errParse := suite.jwt.VerifyToken(
+			tk,
+			standCommonOutput)
+		suite.NoError(errParse)
+		suite.Equal("testTopic", standCommonOutput.Subject)
+		suite.Equal("tester", standCommonOutput.Issuer)
+		suite.Equal("test001", standCommonOutput.ID)
+		suite.Equal(jwt.Audience{"testerClient"}, standCommonOutput.Audience)
+	})
+}
+
+func (suite *JWTRS256Suite) TestJWTRefreshTokenMethod() {
+	suite.NotPanics(func() {
 		standClaims := NewClaimsBuilder().
 			WithSubject("testTopic").
 			WithIssuer("tester").
@@ -206,48 +213,73 @@ func (suite *JWTRS256Suite) TestRS256JWTRefreshTokenMethod() {
 			WithAudience([]string{"testerClient"}).
 			ExpiresAfter(3 * time.Second).Build()
 		common := NewCommon(standClaims, WithSecret("testData"))
-		tk, errTk := j.GenerateToken(common)
-		log.Println(tk)
-		suite.Equal(nil, errTk)
-		standClaimsOutput := NewClaimsBuilder().Build()
-		standCommonOutput := NewCommon(standClaimsOutput)
-		newTk, errRefresh := j.RefreshToken(
+		tk, errTk := suite.jwt.GenerateToken(common)
+		suite.T().Log(tk)
+		suite.NoError(errTk)
+		standCommonOutput := NewCommon(NewClaimsBuilder().Build())
+		newTk, errRefresh := suite.jwt.RefreshToken(
 			tk,
 			standCommonOutput,
 			100*time.Millisecond)
-		suite.Equal(nil, errRefresh)
+		suite.NoError(errRefresh)
 		suite.Equal(tk, newTk)
 	})
 }
 
-func (suite *JWTRS256Suite) TestRS256JWTRefreshTokenMethodExpire() {
+func (suite *JWTRS256Suite) TestJWTRefreshTokenMethodExpire() {
 	suite.NotPanics(func() {
-		j, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
-		standClaimsOutput := NewClaimsBuilder().Build()
-		tk, errRefresh := j.RefreshToken(
-			"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0ZXJDbGllbnQiLCJleHAiOjE2NDY5NjU1NzEsImlzcyI6InRlc3RlciIsImp0aSI6InRlc3QwMDEiLCJzIjoidGVzdERhdGEiLCJzdWIiOiJ0ZXN0VG9waWMifQ.k0QMlXwXmOfAAbPOS8fY3tMla4Mb0bjB64-3BC2pQ4eo-paFs74sRiPSuIVX2NIyoVQD4L2BlJ5ly1uhR6WdLqdtaIAZ-A-bTSUHA26JU0t3LfAg2sfTEbHaff0TMUmhRNZ2EumCQJdNUiD8lv0g-ym2pRzaK0BFCqRj5OrEncUdc_9QtN8Pff9sWgv22vLBfK_teo5ZcIISVeBuje4huyVkLvdzeFKHAR6-jemRHXrnw6MvfdS65p4vnIpw1Hh21fM-kwCt_EbXaDFjWQOScNlJQsC_CIkD1q8MPJcxw3WsZcTNe7nG4_EFJjMkVDEVe87pO-7oMZqOZhlWNxxAWQ",
+		standClaims := NewClaimsBuilder().
+			WithSubject("testTopic").
+			WithIssuer("tester").
+			WithID("test001").
+			WithAudience([]string{"testerClient"}).
+			ExpiresAfter(-3 * time.Second).Build()
+		common := NewCommon(standClaims, WithSecret("testData"))
+		tk, errTk := suite.jwt.GenerateToken(common)
+		suite.T().Log(tk)
+		suite.NoError(errTk)
+		standClaimsOutput := NewCommon(NewClaimsBuilder().Build())
+		tkRefresh, errRefresh := suite.jwt.RefreshToken(
+			tk,
 			standClaimsOutput,
 			100*time.Millisecond,
 		)
-		suite.Equal(nil, errRefresh)
+		suite.NoError(errRefresh)
 		suite.NotEmpty(tk)
-		standClaimsOutputOther := NewClaimsBuilder().Build()
-		standCommonOutput := NewCommon(standClaimsOutputOther)
-		time.Sleep(105 * time.Millisecond)
-		errParse := j.VerifyToken(tk, standCommonOutput)
-		suite.Error(errParse, ErrTokenExpired)
+		suite.NotEqual(tk, tkRefresh)
 	})
 }
 
-func (suite *JWTRS256Suite) TestRS256JWTRefreshTokenMethodparseRSRawError() {
+func (suite *JWTRS256Suite) TestJWTRefreshTokenMethodExpireNoIJWTExpireClaim() {
+	suite.NotPanics(func() {
+		standClaims := NewClaimsBuilder().
+			WithSubject("testTopic").
+			WithIssuer("tester").
+			WithID("test001").
+			WithAudience([]string{"testerClient"}).
+			ExpiresAfter(-3 * time.Second).Build()
+		common := NewMockClaim(standClaims)
+		tk, errTk := suite.jwt.GenerateToken(common)
+		suite.T().Log(tk)
+		suite.NoError(errTk)
+		standClaimsOutput := NewMockClaim(NewClaimsBuilder().Build())
+		tkRefresh, errRefresh := suite.jwt.RefreshToken(
+			tk,
+			standClaimsOutput,
+			100*time.Millisecond,
+		)
+		suite.NoError(errRefresh)
+		suite.NotEmpty(tk)
+		suite.Equal(tk, tkRefresh)
+	})
+}
+
+func (suite *JWTRS256Suite) TestJWTRefreshTokenMethodParseRSRawError() {
 	defer gostub.StubFunc(&parseSigned, nil, errors.New("got error")).Reset()
 	suite.NotPanics(func() {
-		j, err := NewRS256JWT(suite.key)
-		suite.Equal(nil, err)
 		standClaimsOutput := NewClaimsBuilder().Build()
-		_, errRefresh := j.RefreshToken(
-			"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0ZXJDbGllbnQiLCJleHAiOjE2NDY5NjQ5NTYsImlzcyI6InRlc3RlciIsImp0aSI6InRlc3QwMDEiLCJzIjoidGVzdERhdGEiLCJzdWIiOiJ0ZXN0VG9waWMifQ.jLiy8FwQWMwEgOLaHVhZRunMuGPMX7zF9OjHsaI4zODgvu6RiVzqCpdh0rsWN33t7b327qWTzpU3r3cz_LN4wsEHVcqKd_wM-w4PtbMYzL1pOU7k8IyriEFHW8r3Zq9uynOEmBayWcsG9Dw_70xsmb2EAPT_0L8yR4quzqiTqDcqWC8h_uHycqBMw8CJhQVqiF0PqHWtoZTOGcomYnEWAIZHy7DVl-41jr7fc6jA9u1_g2EtvTP_DbwdgFawQ3ehTwkCCSGvxXdfPVvTvQJer43RRpSbqJ5ChZg4DiX83RD4F_JqQca8aaGS6kUcDdNbbqRRsLOowko3m3VO6bGPvg",
+		_, errRefresh := suite.jwt.RefreshToken(
+			"",
 			standClaimsOutput,
 			100*time.Millisecond,
 		)

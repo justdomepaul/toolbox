@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/justdomepaul/toolbox/config"
 	"github.com/square/go-jose/v3"
 	"os"
@@ -73,7 +74,7 @@ func (eh EHS384JWT) Validate(raw string) error {
 	return nil
 }
 
-// ParseToken method
+// VerifyToken method
 func (eh EHS384JWT) VerifyToken(token string, claims IJWTClaims) (err error) {
 	return parseEHSRaw(eh.SigningKey, token, claims)
 }
@@ -84,7 +85,7 @@ func (eh EHS384JWT) RefreshToken(token string, claims IJWTClaims, duration time.
 	if errParse != nil && errParse != ErrTokenExpired {
 		return "", errParse
 	}
-	if errParse == ErrTokenExpired {
+	if errors.Is(errParse, ErrTokenExpired) {
 		claims.(IJWTExpire).ExpiresAfter(duration)
 		return signedAndEncrypted(eh.Sig, eh.Enc).Claims(claims).CompactSerialize()
 	}

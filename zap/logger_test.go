@@ -17,9 +17,8 @@ type LoggerSuite struct {
 
 func (suite *LoggerSuite) TestNewLogger() {
 	option := config.Core{
-		LoggerMode:  "customized",
-		ReleaseMode: true,
-		SystemName:  "system",
+		LoggerMode: "customized",
+		SystemName: "system",
 	}
 	result, err := NewLogger(option)
 	suite.NoError(err)
@@ -28,9 +27,8 @@ func (suite *LoggerSuite) TestNewLogger() {
 
 func (suite *LoggerSuite) TestNewCustomized() {
 	op := config.Core{
-		LoggerMode:  "customized",
-		ReleaseMode: true,
-		SystemName:  "system",
+		LoggerMode: "customized",
+		SystemName: "system",
 	}
 	logger, err := NewCustomized(op)()
 	suite.NoError(err)

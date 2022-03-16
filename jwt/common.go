@@ -24,18 +24,18 @@ func (w withSecret) Apply(c *Common) {
 	c.Secret = w.secret
 }
 
-// Common type
-type Common struct {
-	Secret string `json:"s,omitempty"`
-	*jwt.Claims
+// WithPermissions method
+func WithPermissions(permissions ...string) ClaimsOption {
+	return withPermissions{permissions: permissions}
 }
 
-func (c *Common) ExpiresAfter(d time.Duration) {
-	c.Expiry = expiresAfter(d)
+type withPermissions struct {
+	permissions []string
 }
 
-func (c *Common) GetExpiresAfter() *jwt.NumericDate {
-	return c.Expiry
+// Apply method
+func (w withPermissions) Apply(t *Common) {
+	t.Permissions = w.permissions
 }
 
 // NewCommon method
@@ -49,4 +49,19 @@ func NewCommon(claims *jwt.Claims, options ...ClaimsOption) *Common {
 	}
 
 	return common
+}
+
+// Common type
+type Common struct {
+	Secret      string   `json:"s,omitempty"`
+	Permissions []string `json:"permissions,omitempty"`
+	*jwt.Claims
+}
+
+func (c *Common) ExpiresAfter(d time.Duration) {
+	c.Expiry = expiresAfter(d)
+}
+
+func (c *Common) GetExpiresAfter() *jwt.NumericDate {
+	return c.Expiry
 }

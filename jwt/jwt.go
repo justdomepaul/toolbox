@@ -59,11 +59,7 @@ func parseEESRaw(signingKey *ecdsa.PrivateKey, raw string, claims IJWTClaims) er
 	if errClaims != nil {
 		return errClaims
 	}
-
-	if instance, ok := claims.(IJWTExpire); ok && instance.GetExpiresAfter() != nil && now().UnixNano() > instance.GetExpiresAfter().Time().UnixNano() {
-		return ErrTokenExpired
-	}
-	return nil
+	return checkExpire(claims)
 }
 
 func parseEHSRaw(signingKey []byte, raw string, claims IJWTClaims) error {
@@ -79,10 +75,7 @@ func parseEHSRaw(signingKey []byte, raw string, claims IJWTClaims) error {
 	if errClaims != nil {
 		return errClaims
 	}
-	if instance, ok := claims.(IJWTExpire); ok && instance.GetExpiresAfter() != nil && now().UnixNano() > instance.GetExpiresAfter().Time().UnixNano() {
-		return ErrTokenExpired
-	}
-	return nil
+	return checkExpire(claims)
 }
 
 func parseERSRaw(signingKey *rsa.PrivateKey, raw string, claims IJWTClaims) error {
@@ -98,10 +91,7 @@ func parseERSRaw(signingKey *rsa.PrivateKey, raw string, claims IJWTClaims) erro
 	if errClaims != nil {
 		return errClaims
 	}
-	if instance, ok := claims.(IJWTExpire); ok && instance.GetExpiresAfter() != nil && now().UnixNano() > instance.GetExpiresAfter().Time().UnixNano() {
-		return ErrTokenExpired
-	}
-	return nil
+	return checkExpire(claims)
 }
 
 func parseESRaw(signingKey *ecdsa.PrivateKey, raw string, claims IJWTClaims) error {
@@ -114,10 +104,7 @@ func parseESRaw(signingKey *ecdsa.PrivateKey, raw string, claims IJWTClaims) err
 	if errClaims != nil {
 		return errClaims
 	}
-	if instance, ok := claims.(IJWTExpire); ok && instance.GetExpiresAfter() != nil && now().UnixNano() > instance.GetExpiresAfter().Time().UnixNano() {
-		return ErrTokenExpired
-	}
-	return nil
+	return checkExpire(claims)
 }
 
 func parseHSRaw(signingKey []byte, raw string, claims IJWTClaims) error {
@@ -130,10 +117,7 @@ func parseHSRaw(signingKey []byte, raw string, claims IJWTClaims) error {
 	if errClaims != nil {
 		return errClaims
 	}
-	if instance, ok := claims.(IJWTExpire); ok && instance.GetExpiresAfter() != nil && now().UnixNano() > instance.GetExpiresAfter().Time().UnixNano() {
-		return ErrTokenExpired
-	}
-	return nil
+	return checkExpire(claims)
 }
 
 func parseRSRaw(signingKey *rsa.PrivateKey, raw string, claims IJWTClaims) error {
@@ -146,6 +130,10 @@ func parseRSRaw(signingKey *rsa.PrivateKey, raw string, claims IJWTClaims) error
 	if errClaims != nil {
 		return errClaims
 	}
+	return checkExpire(claims)
+}
+
+func checkExpire(claims IJWTClaims) error {
 	if instance, ok := claims.(IJWTExpire); ok && instance.GetExpiresAfter() != nil && now().UnixNano() > instance.GetExpiresAfter().Time().UnixNano() {
 		return ErrTokenExpired
 	}

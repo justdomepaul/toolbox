@@ -65,7 +65,7 @@ func (r RS256JWT) Validate(raw string) error {
 	return tok.Claims(r.SigningKey.Public())
 }
 
-// ParseToken method
+// VerifyToken method
 func (r RS256JWT) VerifyToken(token string, claims IJWTClaims) (err error) {
 	return parseRSRaw(r.SigningKey, token, claims)
 }
@@ -76,7 +76,7 @@ func (r RS256JWT) RefreshToken(token string, claims IJWTClaims, duration time.Du
 	if errParse != nil && errParse != ErrTokenExpired {
 		return "", errParse
 	}
-	if errParse == ErrTokenExpired {
+	if errors.Is(errParse, ErrTokenExpired) {
 		claims.(IJWTExpire).ExpiresAfter(duration)
 		return signed(r.Sig).Claims(claims).CompactSerialize()
 	}

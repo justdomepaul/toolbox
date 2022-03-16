@@ -80,7 +80,7 @@ func (ee EES256JWT) Validate(raw string) error {
 	return nil
 }
 
-// ParseToken method
+// VerifyToken method
 func (ee EES256JWT) VerifyToken(token string, claims IJWTClaims) (err error) {
 	return parseEESRaw(ee.SigningKey, token, claims)
 }
@@ -91,7 +91,7 @@ func (ee EES256JWT) RefreshToken(token string, claims IJWTClaims, duration time.
 	if errParse != nil && errParse != ErrTokenExpired {
 		return "", errParse
 	}
-	if errParse == ErrTokenExpired {
+	if errors.Is(errParse, ErrTokenExpired) {
 		claims.(IJWTExpire).ExpiresAfter(duration)
 		return signedAndEncrypted(ee.Sig, ee.Enc).Claims(claims).CompactSerialize()
 	}

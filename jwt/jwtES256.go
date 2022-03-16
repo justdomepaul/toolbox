@@ -65,7 +65,7 @@ func (e ES256JWT) Validate(raw string) error {
 	return tok.Claims(e.SigningKey.Public())
 }
 
-// ParseToken method
+// VerifyToken method
 func (e ES256JWT) VerifyToken(token string, claims IJWTClaims) (err error) {
 	return parseESRaw(e.SigningKey, token, claims)
 }
@@ -76,8 +76,10 @@ func (e ES256JWT) RefreshToken(token string, claims IJWTClaims, duration time.Du
 	if errParse != nil && errParse != ErrTokenExpired {
 		return "", errParse
 	}
-	if errParse == ErrTokenExpired {
-		claims.(IJWTExpire).ExpiresAfter(duration)
+	if errors.Is(errParse, ErrTokenExpired) {
+		if instance, ok := claims.(IJWTExpire); ok {
+			instance.ExpiresAfter(duration)
+		}
 		return signed(e.Sig).Claims(claims).CompactSerialize()
 	}
 	return token, nil

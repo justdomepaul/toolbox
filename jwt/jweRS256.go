@@ -80,7 +80,7 @@ func (er ERS256JWT) Validate(raw string) error {
 	return nil
 }
 
-// ParseToken method
+// VerifyToken method
 func (er ERS256JWT) VerifyToken(token string, claims IJWTClaims) (err error) {
 	return parseERSRaw(er.SigningKey, token, claims)
 }
@@ -91,7 +91,7 @@ func (er ERS256JWT) RefreshToken(token string, claims IJWTClaims, duration time.
 	if errParse != nil && errParse != ErrTokenExpired {
 		return "", errParse
 	}
-	if errParse == ErrTokenExpired {
+	if errors.Is(errParse, ErrTokenExpired) {
 		claims.(IJWTExpire).ExpiresAfter(duration)
 		return signedAndEncrypted(er.Sig, er.Enc).Claims(claims).CompactSerialize()
 	}
