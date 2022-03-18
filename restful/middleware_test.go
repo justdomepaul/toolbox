@@ -94,6 +94,24 @@ func (suite *MiddlewareSuite) TestJWTGuarderRunWhiteList() {
 	suite.Equal(http.StatusOK, w.Code)
 }
 
+func (suite *MiddlewareSuite) TestJWTGuarderRunNotAuthorization() {
+	token, err := suite.jwt.GenerateToken(jwt.NewCommon(jwt.NewClaimsBuilder().Build()))
+	suite.NoError(err)
+
+	testGuarderValidator := &testGuarderValidator{}
+
+	r := gin.Default()
+	r.Use(gin.Logger(), errorhandler.GinPanicErrorHandler("Gin Mock", "Gin Mock test JWT guard"))
+	r.GET("/ping", NewJWTGuarder(suite.jwtOp, testGuarderValidator).JWTGuarder())
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/ping", nil)
+	req.Header.Add("Auth", "Basic "+token)
+	r.ServeHTTP(w, req)
+
+	suite.Equal(http.StatusBadRequest, w.Code)
+}
+
 func (suite *MiddlewareSuite) TestJWTGuarderRunFormatError() {
 	token, err := suite.jwt.GenerateToken(jwt.NewCommon(jwt.NewClaimsBuilder().Build()))
 	suite.NoError(err)

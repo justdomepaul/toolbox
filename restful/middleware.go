@@ -1,7 +1,6 @@
 package restful
 
 import (
-	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/justdomepaul/toolbox/config"
 	"github.com/justdomepaul/toolbox/definition"
@@ -37,11 +36,14 @@ func (j *JWTGuarder) JWTGuarder(whitelist ...string) gin.HandlerFunc {
 		}
 		token := c.DefaultQuery(definition.QueryAuthKey, "")
 		if token == "" {
-			header := c.GetHeader(definition.AuthorizationKey)
-			if strings.HasPrefix(header, definition.AuthorizationType) {
-				token = strings.TrimPrefix(header, definition.AuthorizationType)
+			authorization := c.GetHeader(definition.AuthorizationKey)
+			if len(authorization) == 0 {
+				panic(errorhandler.NewErrInvalidArgument(errorhandler.ErrAuthorizationRequired))
+			}
+			if strings.HasPrefix(authorization, definition.AuthorizationType) {
+				token = strings.TrimPrefix(authorization, definition.AuthorizationType)
 			} else {
-				panic(errorhandler.NewErrInvalidArgument(errors.New("JWT Authorization format error: must be Bearer")))
+				panic(errorhandler.NewErrInvalidArgument(errorhandler.ErrAuthorizationTypeBearer))
 			}
 		}
 

@@ -1,8 +1,9 @@
 package definition
 
 const (
-	AuthorizationKey  = "Authorization"
-	AuthorizationType = "Bearer "
-	QueryAuthKey      = "tk"
-	AuthTokenKey      = "tokenClaims"
+	AuthorizationKey       = "authorization"
+	AuthorizationClientKey = "authorization-client"
+	AuthorizationType      = "Bearer "
+	QueryAuthKey           = "tk"
+	AuthTokenKey           = "tokenClaims"
 )

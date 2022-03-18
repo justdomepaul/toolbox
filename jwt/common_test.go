@@ -30,10 +30,11 @@ func (suite *CommonSuite) TestNewCommon() {
 		NewClaimsBuilder().WithSubject("testSubject").WithIssuer("testIssuer").ExpiresAfter(100*time.Second).Build(),
 		WithSecret("testSecret"),
 		WithPermissions("/ping", "/pong"),
+		WithScopes("/ping", "/pong"),
 	)
 
 	suite.Equal("*jwt.Common", reflect.TypeOf(tk).String())
-	suite.Equal("testSecret", tk.Secret)
+	suite.Equal([]byte("testSecret"), tk.Secret)
 	result, err := json.Marshal(tk)
 	suite.NoError(err)
 	suite.T().Log(string(result))

@@ -9,8 +9,11 @@
 - errorhandler
 - firebase
 - grpc
+- interceptor
 - jwt
 - key
+- restful
+- services
 - shorten
 - spannertool (part only for golang 1.18 upper)
 - stringtool

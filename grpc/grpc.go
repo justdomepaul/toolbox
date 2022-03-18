@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 )
 
@@ -49,14 +50,16 @@ func CreateClient(domain string, option config.GRPC) (IClientConn, error) {
 		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 	}
 	if option.NoTLS {
-		options = append(options, grpc.WithInsecure())
+		options = append(options, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 	if option.SkipTLS {
-		cg := &tls.Config{
-			InsecureSkipVerify: true,
-		}
-		cert := credentials.NewTLS(cg)
-		options = append(options, grpc.WithTransportCredentials(cert))
+		options = append(options,
+			grpc.WithTransportCredentials(
+				credentials.NewTLS(&tls.Config{
+					InsecureSkipVerify: true,
+				}),
+			),
+		)
 	}
 
 	return Dial(
