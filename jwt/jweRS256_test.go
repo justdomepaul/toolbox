@@ -2,9 +2,9 @@ package jwt
 
 import (
 	"github.com/cockroachdb/errors"
+	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/justdomepaul/toolbox/config"
 	"github.com/prashantv/gostub"
-	"github.com/square/go-jose/v3/jwt"
 	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"

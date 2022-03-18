@@ -2,8 +2,8 @@ package jwt
 
 import (
 	"github.com/cockroachdb/errors"
+	"github.com/go-jose/go-jose/v3"
 	"github.com/justdomepaul/toolbox/config"
-	"github.com/square/go-jose/v3"
 	"os"
 	"time"
 )

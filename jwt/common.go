@@ -1,8 +1,8 @@
 package jwt
 
 import (
+	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/justdomepaul/toolbox/generic"
-	"github.com/square/go-jose/v3/jwt"
 	"time"
 )
 

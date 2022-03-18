@@ -1,8 +1,8 @@
 package jwt
 
 import (
+	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/prashantv/gostub"
-	"github.com/square/go-jose/v3/jwt"
 	"github.com/stretchr/testify/suite"
 	"reflect"
 	"testing"

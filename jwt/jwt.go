@@ -4,9 +4,9 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"github.com/cockroachdb/errors"
-	jwtPkg "github.com/dgrijalva/jwt-go"
-	"github.com/square/go-jose/v3"
-	"github.com/square/go-jose/v3/jwt"
+	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v3/jwt"
+	jwtPkg "github.com/golang-jwt/jwt"
 	"time"
 )
 
