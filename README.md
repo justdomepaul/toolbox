@@ -15,6 +15,7 @@
 - restful
 - services
 - shorten
+- shutdown
 - spannertool (part only for golang 1.18 upper)
 - stringtool
 - timestamp
