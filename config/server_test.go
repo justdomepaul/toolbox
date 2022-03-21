@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"strconv"
@@ -27,7 +26,6 @@ type ServerSuite struct {
 }
 
 func (suite *ServerSuite) SetupSuite() {
-	t := suite.T()
 	os.Clearenv()
 	suite.ReleaseMode = true
 	suite.Port = "Port"
@@ -42,34 +40,33 @@ func (suite *ServerSuite) SetupSuite() {
 	suite.MaxMultipartMemoryMB = 16
 
 	suite.NoError(os.Setenv("RELEASE_MODE", strconv.FormatBool(suite.ReleaseMode)))
-	assert.NoError(t, os.Setenv("PORT", suite.Port))
-	assert.NoError(t, os.Setenv("METRICS_PORT", suite.MetricsPort))
-	assert.NoError(t, os.Setenv("SERVER_TIMEOUT", fmt.Sprint(suite.ServerTimeout)))
-	assert.NoError(t, os.Setenv("PREFIX_MESSAGE", suite.PrefixMessage))
-	assert.NoError(t, os.Setenv("CUSTOMIZED_RENDER", strconv.FormatBool(suite.CustomizedRender)))
-	assert.NoError(t, os.Setenv("ALLOW_ALL_ORIGINS", strconv.FormatBool(suite.AllowAllOrigins)))
-	assert.NoError(t, os.Setenv("ALLOW_ORIGINS", strings.Join(suite.AllowOrigins, ",")))
-	assert.NoError(t, os.Setenv("ALLOWED_PATHS", strings.Join(suite.AllowedPaths, ",")))
-	assert.NoError(t, os.Setenv("ALLOWED_PATHS", strings.Join(suite.AllowedPaths, ",")))
-	assert.NoError(t, os.Setenv("JWT_GUARD", strconv.FormatBool(suite.JWTGuard)))
-	assert.NoError(t, os.Setenv("MAX_MULTIPART_MEMORY_MB", strconv.FormatInt(suite.MaxMultipartMemoryMB, 10)))
+	suite.NoError(os.Setenv("PORT", suite.Port))
+	suite.NoError(os.Setenv("METRICS_PORT", suite.MetricsPort))
+	suite.NoError(os.Setenv("SERVER_TIMEOUT", fmt.Sprint(suite.ServerTimeout)))
+	suite.NoError(os.Setenv("PREFIX_MESSAGE", suite.PrefixMessage))
+	suite.NoError(os.Setenv("CUSTOMIZED_RENDER", strconv.FormatBool(suite.CustomizedRender)))
+	suite.NoError(os.Setenv("ALLOW_ALL_ORIGINS", strconv.FormatBool(suite.AllowAllOrigins)))
+	suite.NoError(os.Setenv("ALLOW_ORIGINS", strings.Join(suite.AllowOrigins, ",")))
+	suite.NoError(os.Setenv("ALLOWED_PATHS", strings.Join(suite.AllowedPaths, ",")))
+	suite.NoError(os.Setenv("ALLOWED_PATHS", strings.Join(suite.AllowedPaths, ",")))
+	suite.NoError(os.Setenv("JWT_GUARD", strconv.FormatBool(suite.JWTGuard)))
+	suite.NoError(os.Setenv("MAX_MULTIPART_MEMORY_MB", strconv.FormatInt(suite.MaxMultipartMemoryMB, 10)))
 }
 
 func (suite *ServerSuite) TestDefaultOption() {
-	t := suite.T()
 	server := &Server{}
 	suite.NoError(LoadFromEnv(server))
 	suite.Equal(suite.ReleaseMode, server.ReleaseMode)
-	assert.Equal(t, suite.Port, server.Port)
-	assert.Equal(t, suite.MetricsPort, server.MetricsPort)
-	assert.Equal(t, suite.ServerTimeout, server.ServerTimeout)
-	assert.Equal(t, suite.PrefixMessage, server.PrefixMessage)
-	assert.Equal(t, suite.CustomizedRender, server.CustomizedRender)
-	assert.Equal(t, suite.AllowAllOrigins, server.AllowAllOrigins)
-	assert.Equal(t, suite.AllowOrigins, server.AllowOrigins)
-	assert.Equal(t, suite.AllowedPaths, server.AllowedPaths)
-	assert.Equal(t, suite.JWTGuard, server.JWTGuard)
-	assert.Equal(t, suite.MaxMultipartMemoryMB, server.MaxMultipartMemoryMB)
+	suite.Equal(suite.Port, server.Port)
+	suite.Equal(suite.MetricsPort, server.MetricsPort)
+	suite.Equal(suite.ServerTimeout, server.ServerTimeout)
+	suite.Equal(suite.PrefixMessage, server.PrefixMessage)
+	suite.Equal(suite.CustomizedRender, server.CustomizedRender)
+	suite.Equal(suite.AllowAllOrigins, server.AllowAllOrigins)
+	suite.Equal(suite.AllowOrigins, server.AllowOrigins)
+	suite.Equal(suite.AllowedPaths, server.AllowedPaths)
+	suite.Equal(suite.JWTGuard, server.JWTGuard)
+	suite.Equal(suite.MaxMultipartMemoryMB, server.MaxMultipartMemoryMB)
 }
 
 func TestServerSuite(t *testing.T) {
