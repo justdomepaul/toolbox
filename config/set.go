@@ -12,7 +12,7 @@ func NewServer(set Set) Server       { return set.Server }
 func NewSpanner(set Set) Spanner     { return set.Spanner }
 func NewSet() (Set, error) {
 	set := Set{}
-	err := LoadFromEnv(&set.Cassandra, &set.Cloud, &set.Cockroach, &set.Core, &set.Firebase, &set.GRPC, &set.JWT, &set.Server, &set.Spanner)
+	err := LoadFromEnv(&set.Cassandra, &set.Cloud, &set.Cockroach, &set.Core, &set.Firebase, &set.GRPC, &set.JWT, &set.PubSub, &set.Server, &set.Spanner)
 	return set, err
 }
 
