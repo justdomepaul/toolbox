@@ -7,6 +7,7 @@ func NewCore(set Set) Core           { return set.Core }
 func NewFirebase(set Set) Firebase   { return set.Firebase }
 func NewGRPC(set Set) GRPC           { return set.GRPC }
 func NewJWT(set Set) JWT             { return set.JWT }
+func NewPubSub(set Set) PubSub       { return set.PubSub }
 func NewServer(set Set) Server       { return set.Server }
 func NewSpanner(set Set) Spanner     { return set.Spanner }
 func NewSet() (Set, error) {
@@ -23,6 +24,7 @@ type Set struct {
 	Firebase  Firebase
 	GRPC      GRPC
 	JWT       JWT
+	PubSub    PubSub
 	Server    Server
 	Spanner   Spanner
 }

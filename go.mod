@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	cloud.google.com/go/logging v1.4.2
+	cloud.google.com/go/pubsub v1.3.1
 	cloud.google.com/go/spanner v1.30.0
 	cloud.google.com/go/storage v1.21.0
 	firebase.google.com/go v3.13.0+incompatible
