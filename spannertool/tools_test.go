@@ -67,6 +67,10 @@ type mockBatchMutate struct {
 	BAR int `spanner:"BAR" json:"BAR,omitempty"`
 }
 
+type mockBatchMutate2 struct {
+	BAR int `spanner:"BAR" json:"BAR,omitempty"`
+}
+
 type BatchMutateSuite struct {
 	suite.Suite
 }
@@ -79,6 +83,21 @@ func (suite *BatchMutateSuite) TestBatchMutate() {
 	var inputs []mockBatchMutate
 	for i := 1; i < 20000; i++ {
 		inputs = append(inputs, mockBatchMutate{
+			BAR: i,
+		})
+	}
+
+	suite.NoError(BatchMutate(ctx, client, inputs, "FOO", []string{"BAR"}))
+}
+
+func (suite *BatchMutateSuite) TestBatchMutate2() {
+	ctx := context.Background()
+	_, client, teardown := setupMockedTestServer(suite.T())
+	defer teardown()
+
+	var inputs []mockBatchMutate2
+	for i := 1; i < 20000; i++ {
+		inputs = append(inputs, mockBatchMutate2{
 			BAR: i,
 		})
 	}
