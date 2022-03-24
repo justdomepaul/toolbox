@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/alts"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 )
@@ -60,6 +61,9 @@ func CreateClient(domain string, option config.GRPC) (IClientConn, error) {
 				}),
 			),
 		)
+	}
+	if option.ALTS {
+		options = append(options, grpc.WithTransportCredentials(alts.NewClientCreds(alts.DefaultClientOptions())))
 	}
 
 	return Dial(
