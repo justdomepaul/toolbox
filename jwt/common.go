@@ -11,6 +11,20 @@ type ClaimsOption interface {
 	Apply(*Common)
 }
 
+// WithRootID method
+func WithRootID[T generic.ByteSeq](id T) ClaimsOption {
+	return withRootID{id: []byte(id)}
+}
+
+type withRootID struct {
+	id []byte
+}
+
+// Apply method
+func (w withRootID) Apply(c *Common) {
+	c.ClientID = w.id
+}
+
 // WithClientID method
 func WithClientID[T generic.ByteSeq](id T) ClaimsOption {
 	return withClientID{id: []byte(id)}
@@ -83,7 +97,8 @@ func NewCommon(claims *jwt.Claims, options ...ClaimsOption) *Common {
 // Common type
 type Common struct {
 	Secret      []byte   `json:"s,omitempty"`
-	ClientID    []byte   `json:"id,omitempty"`
+	RootID      []byte   `json:"root_id,omitempty"`
+	ClientID    []byte   `json:"client_id,omitempty"`
 	Permissions []string `json:"permissions,omitempty"`
 	Scopes      []string `json:"scopes,omitempty"`
 	*jwt.Claims

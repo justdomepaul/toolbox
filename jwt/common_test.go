@@ -3,6 +3,7 @@ package jwt
 import (
 	"encoding/json"
 	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"reflect"
 	"testing"
@@ -26,8 +27,12 @@ type CommonSuite struct {
 }
 
 func (suite *CommonSuite) TestNewCommon() {
+	uid, err := uuid.NewRandom()
+	suite.NoError(err)
 	tk := NewCommon(
 		NewClaimsBuilder().WithSubject("testSubject").WithIssuer("testIssuer").ExpiresAfter(100*time.Second).Build(),
+		WithRootID(uid[:]),
+		WithClientID(uid[:]),
 		WithSecret("testSecret"),
 		WithPermissions("/ping", "/pong"),
 		WithScopes("/ping", "/pong"),
