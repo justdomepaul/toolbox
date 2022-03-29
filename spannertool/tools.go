@@ -139,9 +139,8 @@ func FetchSpannerTagValue(input interface{}, ignoreZero bool, createdTimeKeyWord
 
 func ExecuteAndCheckEffectRowOverZero(txn *spanner.ReadWriteTransaction, ctx context.Context, stmt spanner.Statement) error {
 	effectRow, err := txn.Update(ctx, stmt)
-	if gRPCErrorStatus, ok := status.FromError(err); ok &&
-		gRPCErrorStatus.Code() == codes.Internal &&
-		strings.Contains(gRPCErrorStatus.Message(), "No result found for statement") {
+	if spanner.ErrCode(err) == codes.Internal &&
+		strings.Contains(err.Error(), "No result found for statement") {
 		return errorhandler.ErrUpdateNoEffect
 	}
 	if err != nil {
