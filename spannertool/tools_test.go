@@ -256,3 +256,19 @@ func (suite *ExecuteAndCheckEffectRowOverZeroSuite) TestExecuteAndCheckEffectRow
 func TestExecuteAndCheckEffectRowOverZeroSuite(t *testing.T) {
 	suite.Run(t, new(ExecuteAndCheckEffectRowOverZeroSuite))
 }
+
+type ValidListArgumentSuite struct {
+	suite.Suite
+}
+
+func (suite *ValidListArgumentSuite) TestValidListArgument() {
+	suite.NoError(ValidListArgument(10, 10))
+}
+
+func (suite *ValidListArgumentSuite) TestValidListArgumentError() {
+	suite.Error(ValidListArgument(10, 0))
+}
+
+func TestValidListArgumentSuite(t *testing.T) {
+	suite.Run(t, new(ValidListArgumentSuite))
+}

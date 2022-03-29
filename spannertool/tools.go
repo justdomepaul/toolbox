@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/cockroachdb/errors"
+	"github.com/go-playground/validator/v10"
 	spannerSession "github.com/justdomepaul/toolbox/database/spanner"
 	"github.com/justdomepaul/toolbox/errorhandler"
 	"github.com/justdomepaul/toolbox/stringtool"
@@ -167,4 +168,18 @@ func GetIteratorFirstRow(iter ISpannerRowIterator, entity interface{}) error {
 		return err
 	}
 	return row.ToStruct(entity)
+}
+
+func ValidListArgument(row, page uint64) error {
+	validStruct := struct {
+		Row  uint64 `validate:"required,min=1"`
+		Page uint64 `validate:"required,min=1"`
+	}{
+		Row:  row,
+		Page: page,
+	}
+	if err := validator.New().Struct(&validStruct); err != nil {
+		return fmt.Errorf("%w: %s", errorhandler.ErrInvalidArguments, err.Error())
+	}
+	return nil
 }
