@@ -17,8 +17,8 @@ package testutil
 import (
 	"context"
 
-	"github.com/golang/protobuf/proto"
 	instancepb "google.golang.org/genproto/googleapis/spanner/admin/instance/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 // InMemInstanceAdminServer contains the InstanceAdminServer interface plus a couple

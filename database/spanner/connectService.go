@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"time"
 )
 
@@ -39,7 +40,7 @@ var NewSession = func(ctx context.Context, opt config.Spanner) (ISession, error)
 		options = append(options, option.WithoutAuthentication())
 	}
 	if opt.GRPCInsecure {
-		options = append(options, option.WithGRPCDialOption(grpc.WithInsecure()))
+		options = append(options, option.WithGRPCDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())))
 	}
 	return newClient(ctx, fmt.Sprintf(`projects/%s/instances/%s/databases/%s`, opt.ProjectID, opt.Instance, opt.Database), options...)
 }

@@ -23,6 +23,10 @@ func (suite *AuthSuite) SetupSuite() {
 	suite.option = option
 }
 
+func (suite *AuthSuite) TearDownSuite() {
+	os.Clearenv()
+}
+
 func (suite *AuthSuite) TestNewAuthApp() {
 	ctx := context.Background()
 	client, err := NewClient(ctx, suite.option)
