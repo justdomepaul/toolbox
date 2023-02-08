@@ -16,31 +16,31 @@ func (suite *ClientSuite) SetupTest() {
 }
 
 func (suite *ClientSuite) TestCreateClientNO_TLS() {
-	r, err := CreateClient("", config.GRPC{
+	r, err := CreateClient("localhost:40800", config.GRPC{
 		NoTLS:   true,
 		SkipTLS: false,
 	})
-	suite.Equal("*grpc.ClientConn", reflect.TypeOf(r).String())
 	suite.NoError(err)
+	suite.Equal("*grpc.ClientConn", reflect.TypeOf(r).String())
 }
 
 func (suite *ClientSuite) TestCreateClientSKIPTLS() {
-	r, err := CreateClient("", config.GRPC{
+	r, err := CreateClient("localhost:40800", config.GRPC{
 		NoTLS:   false,
 		SkipTLS: true,
 	})
-	suite.Equal("*grpc.ClientConn", reflect.TypeOf(r).String())
 	suite.NoError(err)
+	suite.Equal("*grpc.ClientConn", reflect.TypeOf(r).String())
 }
 
 func (suite *ClientSuite) TestCreateClientALTS() {
-	r, err := CreateClient("", config.GRPC{
+	r, err := CreateClient("localhost:40800", config.GRPC{
 		NoTLS:   false,
 		SkipTLS: false,
 		ALTS:    true,
 	})
-	suite.Equal("*grpc.ClientConn", reflect.TypeOf(r).String())
 	suite.NoError(err)
+	suite.Equal("*grpc.ClientConn", reflect.TypeOf(r).String())
 }
 
 func TestClientSuite(t *testing.T) {

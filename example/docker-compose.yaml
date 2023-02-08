@@ -1,0 +1,27 @@
+version: '3.7'
+x-base: &BASE
+  environment:
+    &BASE_ENV
+    LANG: en_US.UTF-8
+  restart: "always"
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10k"
+      max-file: "30"
+services:
+  redis:
+    image: redis:6.2.10-bullseye
+    container_name: redis
+    ports:
+      - "6379:6379"
+  postgresql:
+    image: postgres:14.6-bullseye
+    container_name: postgresql
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"

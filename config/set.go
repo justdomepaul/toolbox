@@ -8,11 +8,26 @@ func NewFirebase(set Set) Firebase   { return set.Firebase }
 func NewGRPC(set Set) GRPC           { return set.GRPC }
 func NewJWT(set Set) JWT             { return set.JWT }
 func NewPubSub(set Set) PubSub       { return set.PubSub }
+func NewPostgres(set Set) Postgres   { return set.Postgres }
+func NewRedis(set Set) Redis         { return set.Redis }
 func NewServer(set Set) Server       { return set.Server }
 func NewSpanner(set Set) Spanner     { return set.Spanner }
 func NewSet() (Set, error) {
 	set := Set{}
-	err := LoadFromEnv(&set.Cassandra, &set.Cloud, &set.Cockroach, &set.Core, &set.Firebase, &set.GRPC, &set.JWT, &set.PubSub, &set.Server, &set.Spanner)
+	err := LoadFromEnv(
+		&set.Cassandra,
+		&set.Cloud,
+		&set.Cockroach,
+		&set.Core,
+		&set.Firebase,
+		&set.GRPC,
+		&set.JWT,
+		&set.PubSub,
+		&set.Postgres,
+		&set.Redis,
+		&set.Server,
+		&set.Spanner,
+	)
 	return set, err
 }
 
@@ -25,6 +40,8 @@ type Set struct {
 	GRPC      GRPC
 	JWT       JWT
 	PubSub    PubSub
+	Postgres  Postgres
+	Redis     Redis
 	Server    Server
 	Spanner   Spanner
 }

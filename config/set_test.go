@@ -64,6 +64,18 @@ func (suite *ConfigSetSuite) TestNewPubSub() {
 	suite.Equal("PubSub", reflect.TypeOf(NewPubSub(result)).Name())
 }
 
+func (suite *ConfigSetSuite) TestNewPostgres() {
+	result, err := NewSet()
+	suite.NoError(err)
+	suite.Equal("Postgres", reflect.TypeOf(NewPostgres(result)).Name())
+}
+
+func (suite *ConfigSetSuite) TestNewRedis() {
+	result, err := NewSet()
+	suite.NoError(err)
+	suite.Equal("Redis", reflect.TypeOf(NewRedis(result)).Name())
+}
+
 func (suite *ConfigSetSuite) TestNewServer() {
 	result, err := NewSet()
 	suite.NoError(err)

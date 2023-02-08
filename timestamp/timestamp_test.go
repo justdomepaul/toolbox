@@ -23,7 +23,7 @@ func (suite *TimestampSuite) TestGetTimestampFormatError() {
 }
 
 func (suite *TimestampSuite) TestGetUTC8Time() {
-	suite.Equal("2018-09-19 15:45:57 +0800 Asia/Taipei", GetUTC8Time(1537343157984).String())
+	suite.Equal("2022-10-09 02:16:02 +0800 Asia/Taipei", GetUTC8Time(1665252962968).String())
 }
 
 func (suite *TimestampSuite) TestGetUnixTimestamp() {
