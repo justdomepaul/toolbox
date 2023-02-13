@@ -20,10 +20,13 @@ func PanicErrorHandler(system, prefixMessage string) {
 			errReportInstance.SetSystem(system).Report("")
 			return
 		}
-		if e, ok := err.(error); ok {
-			logger.Warn(prefixMessage, zap.Error(e))
-		} else {
-			logger.Sugar().Warn(prefixMessage, err)
+		switch err.(type) {
+		case error:
+			logger.Error(prefixMessage, zap.Error(err.(error)))
+		case string:
+			logger.Error(fmt.Sprintf("%s: %s", prefixMessage, err))
+		default:
+			logger.Error(prefixMessage, zap.Any("data", err))
 		}
 	}
 }

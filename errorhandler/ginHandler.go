@@ -1,6 +1,7 @@
 package errorhandler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -14,16 +15,17 @@ func GinPanicErrorHandler(system, prefixMessage string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				if errReportInstance, okIErrorReport := err.(IGinErrorReport); okIErrorReport {
-					errReportInstance.SetSystem(system).Report(prefixMessage)
-					errReportInstance.GinReport(c)
+				switch err.(type) {
+				case IGinErrorReport:
+					err.(IGinErrorReport).SetSystem(system).Report(prefixMessage)
+					err.(IGinErrorReport).GinReport(c)
 					return
-				}
-				if instance, ok := err.(error); ok {
-					c.AbortWithError(http.StatusInternalServerError, instance.(error))
+				case error:
+					c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("%s: %w", prefixMessage, err.(error)))
 					return
+				default:
+					c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("%s: %s", prefixMessage, err))
 				}
-				c.AbortWithStatus(http.StatusInternalServerError)
 			}
 		}()
 		c.Next()

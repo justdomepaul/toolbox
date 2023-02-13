@@ -90,13 +90,13 @@ func (suite *HandlerSuite) TestPanicErrorHandlerPanicNormalError() {
 
 func (suite *HandlerSuite) TestPanicErrorHandlerPanicNormalStringError() {
 	func() {
-		defer PanicErrorHandler("Mock Root System", "Mock test: ")
+		defer PanicErrorHandler("Mock Root System", "Mock test ")
 		panic("got error")
 	}()
 
 	require.Equal(suite.T(), 1, suite.obLog.Len())
 	firstLog := suite.obLog.All()[0]
-	suite.Equal("Mock test: got error", firstLog.Message)
+	suite.Equal("Mock test : got error", firstLog.Message)
 }
 
 func TestHandlerSuite(t *testing.T) {

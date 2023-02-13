@@ -14,16 +14,17 @@ type IGRPCErrorReport interface {
 
 func PanicGRPCErrorHandler(errContent *error, system, prefixMessage string) {
 	if err := recover(); err != nil {
-		if result, ok := err.(error); ok {
-			if errReportInstance, okIErrorReport := result.(IGRPCErrorReport); okIErrorReport {
-				errReportInstance.SetSystem(system).Report(prefixMessage)
-				errReportInstance.GRPCReport(errContent, prefixMessage)
-				return
-			}
-			fromStatusError(errContent, result, prefixMessage)
+		switch err.(type) {
+		case IGRPCErrorReport:
+			err.(IGRPCErrorReport).SetSystem(system).Report(prefixMessage)
+			err.(IGRPCErrorReport).GRPCReport(errContent, prefixMessage)
 			return
+		case error:
+			fromStatusError(errContent, err.(error), prefixMessage)
+			return
+		default:
+			*errContent = status.Error(codes.Unknown, errors.Wrap(fmt.Errorf("%v", err), prefixMessage).Error())
 		}
-		*errContent = status.Error(codes.Unknown, errors.Wrap(fmt.Errorf("%v", err), prefixMessage).Error())
 	}
 }
 
