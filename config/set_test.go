@@ -58,6 +58,12 @@ func (suite *ConfigSetSuite) TestNewJWT() {
 	suite.Equal("JWT", reflect.TypeOf(NewJWT(result)).Name())
 }
 
+func (suite *ConfigSetSuite) TestNewNewMongo() {
+	result, err := NewSet()
+	suite.NoError(err)
+	suite.Equal("Mongo", reflect.TypeOf(NewMongo(result)).Name())
+}
+
 func (suite *ConfigSetSuite) TestNewPubSub() {
 	result, err := NewSet()
 	suite.NoError(err)

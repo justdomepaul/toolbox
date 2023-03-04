@@ -7,6 +7,7 @@ func NewCore(set Set) Core           { return set.Core }
 func NewFirebase(set Set) Firebase   { return set.Firebase }
 func NewGRPC(set Set) GRPC           { return set.GRPC }
 func NewJWT(set Set) JWT             { return set.JWT }
+func NewMongo(set Set) Mongo         { return set.Mongo }
 func NewPubSub(set Set) PubSub       { return set.PubSub }
 func NewPostgres(set Set) Postgres   { return set.Postgres }
 func NewRedis(set Set) Redis         { return set.Redis }
@@ -22,6 +23,7 @@ func NewSet() (Set, error) {
 		&set.Firebase,
 		&set.GRPC,
 		&set.JWT,
+		&set.Mongo,
 		&set.PubSub,
 		&set.Postgres,
 		&set.Redis,
@@ -39,6 +41,7 @@ type Set struct {
 	Firebase  Firebase
 	GRPC      GRPC
 	JWT       JWT
+	Mongo     Mongo
 	PubSub    PubSub
 	Postgres  Postgres
 	Redis     Redis
