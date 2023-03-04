@@ -37,12 +37,12 @@ type ISession interface {
 var NewSession = func(ctx context.Context, opt config.Mongo) (ISession, error) {
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
 	clientOptions := options.Client().
-		ApplyURI(fmt.Sprintf("mongodb+srv://%s:%s@%s/%s?retryWrites=true&w=majority", opt.MongoUsername, opt.MongoPassword, opt.MongoHost, opt.MongoDatabase)).
+		ApplyURI(fmt.Sprintf("%s://%s:%s@%s/%s?retryWrites=true&w=majority", opt.MongoProtocol, opt.MongoUsername, opt.MongoPassword, opt.MongoHost, opt.MongoDatabase)).
 		SetServerAPIOptions(serverAPIOptions)
 	return newClient(ctx, clientOptions)
 }
 
-func NewExtendFirestoreDatabase(logger *zap.Logger, opt config.Mongo) (ISession, func(), error) {
+func NewExtendMongoDatabase(logger *zap.Logger, opt config.Mongo) (ISession, func(), error) {
 	ctx := context.Background()
 	session, err := NewSession(ctx, opt)
 	if err != nil {

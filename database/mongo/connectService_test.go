@@ -1,13 +1,13 @@
 package mongo
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
 	"github.com/cockroachdb/errors"
 	"github.com/justdomepaul/toolbox/config"
 	"github.com/prashantv/gostub"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 	"reflect"
 	"testing"
@@ -28,33 +28,33 @@ type ConnectServiceSuite struct {
 }
 
 func (suite *ConnectServiceSuite) TestNewSession() {
-	defer gostub.StubFunc(&newClient, &firestore.Client{}, nil).Reset()
+	defer gostub.StubFunc(&newClient, &mongo.Client{}, nil).Reset()
 
-	option := config.Firestore{}
+	option := config.Mongo{}
 	suite.NoError(config.LoadFromEnv(&option))
 	_, errSession := NewSession(context.Background(), option)
 	suite.NoError(errSession)
 }
 
-func (suite *ConnectServiceSuite) TestNewExtendFirestoreDatabase() {
+func (suite *ConnectServiceSuite) TestNewExtendMongoDatabase() {
 	defer gostub.StubFunc(&NewSession, new(testISession), nil).Reset()
 
-	option := config.Firestore{}
+	option := config.Mongo{}
 	suite.NoError(config.LoadFromEnv(&option))
-	result, fn, err := NewExtendFirestoreDatabase(
+	result, fn, err := NewExtendMongoDatabase(
 		zap.NewExample(),
 		option)
 	suite.NoError(err)
 	defer fn()
-	suite.Equal("*firestore.testISession", reflect.TypeOf(result).String())
+	suite.Equal("*mongo.testISession", reflect.TypeOf(result).String())
 	suite.Equal("func()", reflect.TypeOf(fn).String())
 }
 
-func (suite *ConnectServiceSuite) TestNewExtendFirestoreDatabaseNewSessionError() {
+func (suite *ConnectServiceSuite) TestNewExtendMongoDatabaseNewSessionError() {
 	defer gostub.StubFunc(&NewSession, new(testISession), errors.New("got error")).Reset()
-	option := config.Firestore{}
+	option := config.Mongo{}
 	suite.NoError(config.LoadFromEnv(&option))
-	_, _, errExtendSpannerDatabase := NewExtendFirestoreDatabase(
+	_, _, errExtendSpannerDatabase := NewExtendMongoDatabase(
 		zap.NewExample(),
 		option)
 	suite.Error(errExtendSpannerDatabase)
