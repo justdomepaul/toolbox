@@ -20,24 +20,6 @@ type IJWTExpire interface {
 	GetExpiresAfter() *jwt.NumericDate
 }
 
-type IClaims interface {
-	ExpiresAfter(d time.Duration) *ClaimsBuilder
-	GetExpiresAfter() *jwt.NumericDate
-	WithAudience(audience jwt.Audience) *ClaimsBuilder
-	GetAudience() jwt.Audience
-	WithID(id string) *ClaimsBuilder
-	GetID() string
-	WithIssuedAt() *ClaimsBuilder
-	GetIssuedAt() *jwt.NumericDate
-	WithIssuer(issuer string) *ClaimsBuilder
-	GetIssuer() string
-	NotUseBefore(d time.Duration) *ClaimsBuilder
-	GetNotBefore() *jwt.NumericDate
-	WithSubject(subject string) *ClaimsBuilder
-	GetSubject() string
-	Build() *jwt.Claims
-}
-
 func expiresAfter(d time.Duration) *jwt.NumericDate {
 	return jwt.NewNumericDate(Now().Add(d))
 }
