@@ -2,6 +2,7 @@ package auth0
 
 import (
 	"crypto/rsa"
+	"github.com/justdomepaul/toolbox/jwt"
 	"github.com/stretchr/testify/suite"
 	"github.com/tidwall/gjson"
 	"math/big"
@@ -45,14 +46,27 @@ func (suite *Auth0Suite) TestParseAuth0RSAPublicKeyFromCert() {
 	suite.Equal(expectedN, publicKey.N)
 }
 
-func (suite *Auth0Suite) TestVerifyAuth0RS256IDToken() {
+func (suite *Auth0Suite) TestValidateAuth0RS256IDToken() {
 	publicKey, err := ParseAuth0RSAPublicKeyFromCert(suite.cert)
 	suite.NoError(err)
-	suite.NoError(VerifyAuth0RS256IDToken(publicKey, suite.idToken))
+	suite.NoError(ValidateAuth0RS256IDToken(publicKey, suite.idToken))
 }
 
 func (suite *Auth0Suite) TestVerifyAuth0RS256IDTokenFail() {
-	suite.Error(VerifyAuth0RS256IDToken(&rsa.PublicKey{}, "test"))
+	suite.Error(ValidateAuth0RS256IDToken(&rsa.PublicKey{}, "test"))
+}
+
+func (suite *Auth0Suite) TestVerifyAuth0RS256IDToken() {
+	publicKey, err := ParseAuth0RSAPublicKeyFromCert(suite.cert)
+	suite.NoError(err)
+	claims := NewCommon(jwt.NewClaimsBuilder().Build())
+	suite.Error(VerifyAuth0RS256IDToken(publicKey, suite.idToken, claims), jwt.ErrTokenExpired)
+
+	suite.Equal("justdomepaul@gmail.com", claims.Email)
+	suite.Equal("Maxfocker", claims.Name)
+	suite.Equal("justdomepaul", claims.Nickname)
+	suite.Equal("bkloTzNWMk1ZV1ZNekY2eWpXODZMeVROTnRIWlZvZWNXYzRtQVBzYVllQQ==", claims.Nonce)
+	suite.Equal("ikrsbY4WaDFpNXhFt1X06v9t0SLWDs5Y", claims.SID)
 }
 
 func TestAuth0Suite(t *testing.T) {
@@ -80,6 +94,6 @@ func BenchmarkVerifyAuth0RS256IDToken(b *testing.B) {
 	idToken := "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjhqeXJ6R1RxWkpxMm4taHlCQUtKaSJ9.eyJ1c2VyX3Blcm1pc3Npb25zIjpbInJlYWQ6dG9kbyIsIndyaXRlOmNyZWF0ZVRvZG8iXSwibmlja25hbWUiOiJqdXN0ZG9tZXBhdWwiLCJuYW1lIjoiTWF4Zm9ja2VyIiwicGljdHVyZSI6Imh0dHBzOi8vYXZhdGFycy5naXRodWJ1c2VyY29udGVudC5jb20vdS8xMDE3NDkyND92PTQiLCJ1cGRhdGVkX2F0IjoiMjAyMy0wNC0wMlQxNzo0NToxMi4xMzVaIiwiZW1haWwiOiJqdXN0ZG9tZXBhdWxAZ21haWwuY29tIiwiaXNzIjoiaHR0cHM6Ly9kZXYtdGU1NzUwbjMwM25vNGI2cS51cy5hdXRoMC5jb20vIiwiYXVkIjoiYWcxTDJpMUVkbnBsSnRsR0Rkak9aMHhTc3BrWGRuTVAiLCJpYXQiOjE2ODA0NTc1MTMsImV4cCI6MTY4MDQ5MzUxMywic3ViIjoiZ2l0aHVifDEwMTc0OTI0IiwiYXV0aF90aW1lIjoxNjgwNDU3NTEyLCJzaWQiOiJpa3JzYlk0V2FERnBOWGhGdDFYMDZ2OXQwU0xXRHM1WSIsIm5vbmNlIjoiYmtsb1R6TldNazFaVjFaTmVrWTJlV3BYT0RaTWVWUk9UblJJV2xadlpXTlhZelJ0UVZCellWbGxRUT09In0.MvRtxYgy6ZkQB6Vi9pN717tAJddKf9l07Rt_NtLOWWrCRH2CQ8Gj3ddpIJVT0tg2dDWtzJYrQP-z8inHgz3Htx-0SgTuXDfcIWxM0g0cMQUM5FgVEWS73HFIDEz2HV8XBg1rsT1Duvyjp0FgHyli6ku_eX0SC48K2y0bD5Pp6GlIPlfceDGM-H5pl3YyW9JypKDwsboy308TRHl38xwzG88ppyihaQl6y6cdsOdZuF-i62F3Kgou_MmWiL0eN9WiOGI_xVADa6DURw8xaHHvoz4DtsnplL8NCAomdb4FUKF22Q7eNp_VtGNyNJsZKY4N6evZ5LSaPw8EvO0Z9sm2GA"
 	publicKey, _ := ParseAuth0RSAPublicKeyFromCert(cert)
 	for i := 0; i < b.N; i++ {
-		VerifyAuth0RS256IDToken(publicKey, idToken)
+		ValidateAuth0RS256IDToken(publicKey, idToken)
 	}
 }

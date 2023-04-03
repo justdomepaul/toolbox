@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-jose/go-jose/v3/jwt"
 	jwtPkg "github.com/golang-jwt/jwt"
+	jwtTool "github.com/justdomepaul/toolbox/jwt"
 	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
@@ -45,10 +46,29 @@ func ParseAuth0RSAPublicKeyFromCert(cert string) (*rsa.PublicKey, error) {
 	)
 }
 
-func VerifyAuth0RS256IDToken(rsaPublicKey *rsa.PublicKey, idToken string) error {
+func ValidateAuth0RS256IDToken(rsaPublicKey *rsa.PublicKey, idToken string) error {
 	token, err := jwt.ParseSigned(idToken)
 	if err != nil {
 		return err
 	}
 	return token.Claims(rsaPublicKey)
+}
+
+func VerifyAuth0RS256IDToken(rsaPublicKey *rsa.PublicKey, idToken string, claims jwtTool.IJWTClaims) error {
+	token, err := jwt.ParseSigned(idToken)
+	if err != nil {
+		return err
+	}
+
+	if err := token.Claims(rsaPublicKey, claims); err != nil {
+		return err
+	}
+	return checkExpire(claims)
+}
+
+func checkExpire(claims jwtTool.IJWTClaims) error {
+	if instance, ok := claims.(jwtTool.IJWTExpire); ok && instance.GetExpiresAfter() != nil && now().UnixNano() > instance.GetExpiresAfter().Time().UnixNano() {
+		return jwtTool.ErrTokenExpired
+	}
+	return nil
 }
