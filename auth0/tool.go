@@ -4,6 +4,8 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"fmt"
+	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v3/json"
 	"github.com/go-jose/go-jose/v3/jwt"
 	jwtPkg "github.com/golang-jwt/jwt"
 	jwtTool "github.com/justdomepaul/toolbox/jwt"
@@ -21,6 +23,13 @@ func GetAuth0JWKSInfo(auth0Domain string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	return io.ReadAll(resp.Body)
+}
+
+func GetAuth0JWKSSet(jwksInfo []byte) (set jose.JSONWebKeySet, err error) {
+	if err := json.Unmarshal(jwksInfo, &set); err != nil {
+		return set, err
+	}
+	return
 }
 
 func GetAuth0JWKSPublicKeyCert(jwksInfo []byte, idToken string) (cert string, err error) {
@@ -46,12 +55,31 @@ func ParseAuth0RSAPublicKeyFromCert(cert string) (*rsa.PublicKey, error) {
 	)
 }
 
+func ValidateAuth0RS256IDTokenByJWKSSet(set jose.JSONWebKeySet, idToken string) error {
+	token, err := jwt.ParseSigned(idToken)
+	if err != nil {
+		return err
+	}
+	return token.Claims(set)
+}
+
 func ValidateAuth0RS256IDToken(rsaPublicKey *rsa.PublicKey, idToken string) error {
 	token, err := jwt.ParseSigned(idToken)
 	if err != nil {
 		return err
 	}
 	return token.Claims(rsaPublicKey)
+}
+
+func VerifyAuth0RS256IDTokenByJWKSSet(set jose.JSONWebKeySet, idToken string, claims jwtTool.IJWTClaims) error {
+	token, err := jwt.ParseSigned(idToken)
+	if err != nil {
+		return err
+	}
+	if err := token.Claims(set, claims); err != nil {
+		return err
+	}
+	return checkExpire(claims)
 }
 
 func VerifyAuth0RS256IDToken(rsaPublicKey *rsa.PublicKey, idToken string, claims jwtTool.IJWTClaims) error {

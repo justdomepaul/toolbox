@@ -29,6 +29,25 @@ func (suite *Auth0Suite) TestGetAuth0JWKSInfo() {
 	suite.Greater(len(gjson.GetBytes(jwksInfo, "keys").Array()), 0)
 }
 
+func (suite *Auth0Suite) TestGetAuth0JWKSInfoFailDomain() {
+	_, err := GetAuth0JWKSInfo("https://localhost")
+	suite.Error(err)
+}
+
+func (suite *Auth0Suite) TestGetAuth0JWKSSet() {
+	jwksInfo, err := GetAuth0JWKSInfo(suite.auth0Domain)
+	suite.NoError(err)
+	set, err := GetAuth0JWKSSet(jwksInfo)
+	suite.NoError(err)
+	suite.Greater(len(set.Keys), 0)
+	suite.T().Logf("%+v\n", set)
+}
+
+func (suite *Auth0Suite) TestGetAuth0JWKSSetFailJWKSInfo() {
+	_, err := GetAuth0JWKSSet([]byte(""))
+	suite.Error(err)
+}
+
 func (suite *Auth0Suite) TestGetAuth0JWKSPublicKeyCert() {
 	jwksInfo, err := GetAuth0JWKSInfo(suite.auth0Domain)
 	suite.NoError(err)
@@ -46,27 +65,74 @@ func (suite *Auth0Suite) TestParseAuth0RSAPublicKeyFromCert() {
 	suite.Equal(expectedN, publicKey.N)
 }
 
+func (suite *Auth0Suite) TestValidateAuth0RS256IDTokenByJWKSSet() {
+	jwksInfo, err := GetAuth0JWKSInfo(suite.auth0Domain)
+	suite.NoError(err)
+	set, err := GetAuth0JWKSSet(jwksInfo)
+	suite.NoError(err)
+	suite.NoError(ValidateAuth0RS256IDTokenByJWKSSet(set, suite.idToken))
+}
+
+func (suite *Auth0Suite) TestValidateAuth0RS256IDTokenByJWKSSetFail() {
+	jwksInfo, err := GetAuth0JWKSInfo(suite.auth0Domain)
+	suite.NoError(err)
+	set, err := GetAuth0JWKSSet(jwksInfo)
+	suite.NoError(err)
+	suite.Error(ValidateAuth0RS256IDTokenByJWKSSet(set, "test"))
+}
+
 func (suite *Auth0Suite) TestValidateAuth0RS256IDToken() {
 	publicKey, err := ParseAuth0RSAPublicKeyFromCert(suite.cert)
 	suite.NoError(err)
 	suite.NoError(ValidateAuth0RS256IDToken(publicKey, suite.idToken))
 }
 
-func (suite *Auth0Suite) TestVerifyAuth0RS256IDTokenFail() {
+func (suite *Auth0Suite) TestValidateAuth0RS256IDTokenFail() {
 	suite.Error(ValidateAuth0RS256IDToken(&rsa.PublicKey{}, "test"))
 }
 
-func (suite *Auth0Suite) TestVerifyAuth0RS256IDToken() {
-	publicKey, err := ParseAuth0RSAPublicKeyFromCert(suite.cert)
+func (suite *Auth0Suite) TestVerifyAuth0RS256IDTokenByJWKSSet() {
+	jwksInfo, err := GetAuth0JWKSInfo(suite.auth0Domain)
+	suite.NoError(err)
+	set, err := GetAuth0JWKSSet(jwksInfo)
 	suite.NoError(err)
 	claims := NewCommon(jwt.NewClaimsBuilder().Build())
-	suite.Error(VerifyAuth0RS256IDToken(publicKey, suite.idToken, claims), jwt.ErrTokenExpired)
+	suite.ErrorIs(VerifyAuth0RS256IDTokenByJWKSSet(set, suite.idToken, claims), jwt.ErrTokenExpired)
 
 	suite.Equal("justdomepaul@gmail.com", claims.Email)
 	suite.Equal("Maxfocker", claims.Name)
 	suite.Equal("justdomepaul", claims.Nickname)
 	suite.Equal("bkloTzNWMk1ZV1ZNekY2eWpXODZMeVROTnRIWlZvZWNXYzRtQVBzYVllQQ==", claims.Nonce)
 	suite.Equal("ikrsbY4WaDFpNXhFt1X06v9t0SLWDs5Y", claims.SID)
+}
+
+func (suite *Auth0Suite) TestVerifyAuth0RS256IDTokenByJWKSSetFailIDToken() {
+	jwksInfo, err := GetAuth0JWKSInfo(suite.auth0Domain)
+	suite.NoError(err)
+	set, err := GetAuth0JWKSSet(jwksInfo)
+	suite.NoError(err)
+	claims := NewCommon(jwt.NewClaimsBuilder().Build())
+	suite.Error(VerifyAuth0RS256IDTokenByJWKSSet(set, "test", claims))
+}
+
+func (suite *Auth0Suite) TestVerifyAuth0RS256IDToken() {
+	publicKey, err := ParseAuth0RSAPublicKeyFromCert(suite.cert)
+	suite.NoError(err)
+	claims := NewCommon(jwt.NewClaimsBuilder().Build())
+	suite.ErrorIs(VerifyAuth0RS256IDToken(publicKey, suite.idToken, claims), jwt.ErrTokenExpired)
+
+	suite.Equal("justdomepaul@gmail.com", claims.Email)
+	suite.Equal("Maxfocker", claims.Name)
+	suite.Equal("justdomepaul", claims.Nickname)
+	suite.Equal("bkloTzNWMk1ZV1ZNekY2eWpXODZMeVROTnRIWlZvZWNXYzRtQVBzYVllQQ==", claims.Nonce)
+	suite.Equal("ikrsbY4WaDFpNXhFt1X06v9t0SLWDs5Y", claims.SID)
+}
+
+func (suite *Auth0Suite) TestVerifyAuth0RS256IDTokenFailIDToken() {
+	publicKey, err := ParseAuth0RSAPublicKeyFromCert(suite.cert)
+	suite.NoError(err)
+	claims := NewCommon(jwt.NewClaimsBuilder().Build())
+	suite.Error(VerifyAuth0RS256IDToken(publicKey, "test", claims))
 }
 
 func TestAuth0Suite(t *testing.T) {
