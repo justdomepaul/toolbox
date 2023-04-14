@@ -9,12 +9,13 @@ import (
 
 type MongoSuite struct {
 	suite.Suite
-	MongoProtocol   string
-	MongoUsername   string
-	MongoPassword   string
-	MongoHost       string
-	MongoDatabase   string
-	MongoAuthSource bool
+	MongoProtocol          string
+	MongoUsername          string
+	MongoPassword          string
+	MongoHost              string
+	MongoDatabase          string
+	MongoAuthSource        bool
+	MongoIgnoreQueryString bool
 }
 
 func (suite *MongoSuite) SetupSuite() {
@@ -25,6 +26,7 @@ func (suite *MongoSuite) SetupSuite() {
 	suite.MongoHost = "testMongoHost"
 	suite.MongoDatabase = "testMongoDatabase"
 	suite.MongoAuthSource = false
+	suite.MongoIgnoreQueryString = false
 
 	suite.NoError(os.Setenv("MONGO_PROTOCOL", suite.MongoProtocol))
 	suite.NoError(os.Setenv("MONGO_USERNAME", suite.MongoUsername))
@@ -32,6 +34,7 @@ func (suite *MongoSuite) SetupSuite() {
 	suite.NoError(os.Setenv("MONGO_HOST", suite.MongoHost))
 	suite.NoError(os.Setenv("MONGO_DATABASE", suite.MongoDatabase))
 	suite.NoError(os.Setenv("MONGO_AUTH_SOURCE", strconv.FormatBool(suite.MongoAuthSource)))
+	suite.NoError(os.Setenv("MONGO_IGNORE_QUERY_STRING", strconv.FormatBool(suite.MongoIgnoreQueryString)))
 }
 
 func (suite *MongoSuite) TestDefaultOption() {
@@ -43,6 +46,7 @@ func (suite *MongoSuite) TestDefaultOption() {
 	suite.Equal(suite.MongoHost, mongo.MongoHost)
 	suite.Equal(suite.MongoDatabase, mongo.MongoDatabase)
 	suite.Equal(suite.MongoAuthSource, mongo.MongoAuthSource)
+	suite.Equal(suite.MongoIgnoreQueryString, mongo.MongoIgnoreQueryString)
 }
 
 func TestMongoSuite(t *testing.T) {

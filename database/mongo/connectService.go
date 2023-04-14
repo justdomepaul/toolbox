@@ -48,6 +48,9 @@ var NewSession = func(ctx context.Context, opt config.Mongo) (ISession, error) {
 	if opt.MongoAuthSource {
 		permission = "?authSource=admin"
 	}
+	if opt.MongoIgnoreQueryString {
+		permission = ""
+	}
 
 	clientOptions := options.Client().
 		ApplyURI(fmt.Sprintf("%s://%s%s%s%s", opt.MongoProtocol, authentication, opt.MongoHost, database, permission)).
