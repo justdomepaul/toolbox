@@ -36,10 +36,14 @@ func (suite *ConnectServiceSuite) TestNewSession() {
 	suite.NoError(errSession)
 }
 
-func (suite *ConnectServiceSuite) TestNewSessionWithAuthSource() {
+func (suite *ConnectServiceSuite) TestNewSessionWithOption() {
 	defer gostub.StubFunc(&newClient, &mongo.Client{}, nil).Reset()
 
 	option := config.Mongo{
+		MongoProtocol:   "mongodb",
+		MongoUsername:   "root",
+		MongoPassword:   "example",
+		MongoDatabase:   "database",
 		MongoAuthSource: true,
 	}
 	suite.NoError(config.LoadFromEnv(&option))

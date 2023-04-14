@@ -36,12 +36,21 @@ type ISession interface {
 // NewSession method
 var NewSession = func(ctx context.Context, opt config.Mongo) (ISession, error) {
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
-	permission := "retryWrites=true&w=majority"
-	if opt.MongoAuthSource {
-		permission = "authSource=admin"
+	authentication := ""
+	database := ""
+	permission := "?retryWrites=true&w=majority"
+	if opt.MongoUsername != "" && opt.MongoPassword != "" {
+		authentication = fmt.Sprintf("%s:%s@", opt.MongoUsername, opt.MongoPassword)
 	}
+	if opt.MongoDatabase != "" {
+		database = fmt.Sprintf("/%s", opt.MongoDatabase)
+	}
+	if opt.MongoAuthSource {
+		permission = "?authSource=admin"
+	}
+
 	clientOptions := options.Client().
-		ApplyURI(fmt.Sprintf("%s://%s:%s@%s/%s?%s", opt.MongoProtocol, opt.MongoUsername, opt.MongoPassword, opt.MongoHost, opt.MongoDatabase, permission)).
+		ApplyURI(fmt.Sprintf("%s://%s%s%s%s", opt.MongoProtocol, authentication, opt.MongoHost, database, permission)).
 		SetServerAPIOptions(serverAPIOptions)
 	return newClient(ctx, clientOptions)
 }
