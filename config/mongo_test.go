@@ -3,16 +3,18 @@ package config
 import (
 	"github.com/stretchr/testify/suite"
 	"os"
+	"strconv"
 	"testing"
 )
 
 type MongoSuite struct {
 	suite.Suite
-	MongoProtocol string
-	MongoUsername string
-	MongoPassword string
-	MongoHost     string
-	MongoDatabase string
+	MongoProtocol   string
+	MongoUsername   string
+	MongoPassword   string
+	MongoHost       string
+	MongoDatabase   string
+	MongoAuthSource bool
 }
 
 func (suite *MongoSuite) SetupSuite() {
@@ -22,12 +24,14 @@ func (suite *MongoSuite) SetupSuite() {
 	suite.MongoPassword = "testMongoPassword"
 	suite.MongoHost = "testMongoHost"
 	suite.MongoDatabase = "testMongoDatabase"
+	suite.MongoAuthSource = false
 
 	suite.NoError(os.Setenv("MONGO_PROTOCOL", suite.MongoProtocol))
 	suite.NoError(os.Setenv("MONGO_USERNAME", suite.MongoUsername))
 	suite.NoError(os.Setenv("MONGO_PASSWORD", suite.MongoPassword))
 	suite.NoError(os.Setenv("MONGO_HOST", suite.MongoHost))
 	suite.NoError(os.Setenv("MONGO_DATABASE", suite.MongoDatabase))
+	suite.NoError(os.Setenv("MONGO_AUTH_SOURCE", strconv.FormatBool(suite.MongoAuthSource)))
 }
 
 func (suite *MongoSuite) TestDefaultOption() {
@@ -38,6 +42,7 @@ func (suite *MongoSuite) TestDefaultOption() {
 	suite.Equal(suite.MongoPassword, mongo.MongoPassword)
 	suite.Equal(suite.MongoHost, mongo.MongoHost)
 	suite.Equal(suite.MongoDatabase, mongo.MongoDatabase)
+	suite.Equal(suite.MongoAuthSource, mongo.MongoAuthSource)
 }
 
 func TestMongoSuite(t *testing.T) {

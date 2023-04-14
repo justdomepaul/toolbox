@@ -36,6 +36,17 @@ func (suite *ConnectServiceSuite) TestNewSession() {
 	suite.NoError(errSession)
 }
 
+func (suite *ConnectServiceSuite) TestNewSessionWithAuthSource() {
+	defer gostub.StubFunc(&newClient, &mongo.Client{}, nil).Reset()
+
+	option := config.Mongo{
+		MongoAuthSource: true,
+	}
+	suite.NoError(config.LoadFromEnv(&option))
+	_, errSession := NewSession(context.Background(), option)
+	suite.NoError(errSession)
+}
+
 func (suite *ConnectServiceSuite) TestNewExtendMongoDatabase() {
 	defer gostub.StubFunc(&NewSession, new(testISession), nil).Reset()
 
