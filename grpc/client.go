@@ -17,7 +17,7 @@ var (
 	Dial = grpc.Dial
 )
 
-// Register interface
+// IRegister interface
 type IRegister interface {
 	Handler(*grpc.Server)
 }

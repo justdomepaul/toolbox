@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -23,13 +22,13 @@ func CreateServer(logger *zap.Logger, grpcOption config.GRPC, authenticateServic
 		}),
 	}
 	options := []grpc.ServerOption{
-		grpc_middleware.WithUnaryServerChain(
+		grpc.ChainUnaryInterceptor(
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpc_zap.UnaryServerInterceptor(logger, opts...),
 			grpc_prometheus.UnaryServerInterceptor,
 			authenticate.UnaryServerInterceptor(authenticateService),
 		),
-		grpc_middleware.WithStreamServerChain(
+		grpc.ChainStreamInterceptor(
 			grpc_ctxtags.StreamServerInterceptor(),
 			grpc_zap.StreamServerInterceptor(logger, opts...),
 			grpc_prometheus.StreamServerInterceptor,

@@ -7,9 +7,9 @@ import (
 	"google.golang.org/api/option"
 )
 
+// NewClient method
 // env FIREBASE_CONFIG_JSON
 // env FIREBASE_PROJECT_ID
-// NewClient method
 func NewClient(ctx context.Context, firebaseOption config.Firebase) (*firebase.App, error) {
 	options := make([]option.ClientOption, 0)
 	if firebaseOption.FirebaseConfigJSON != "" {
