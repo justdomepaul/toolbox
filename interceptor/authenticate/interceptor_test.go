@@ -72,9 +72,13 @@ func (suite *InterceptorSuite) TestInterceptorAllowed() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/Ping"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, errorhandler.ErrInWhitelist)
+		Return(authorization, errorhandler.ErrInWhitelist)
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -110,9 +114,13 @@ func (suite *InterceptorSuite) TestInterceptor() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/Ping"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, nil)
+		Return(authorization, nil)
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -148,9 +156,13 @@ func (suite *InterceptorSuite) TestInterceptorGRPCError() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/Ping"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, status.Error(codes.Aborted, "got error"))
+		Return(authorization, status.Error(codes.Aborted, "got error"))
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -186,9 +198,13 @@ func (suite *InterceptorSuite) TestInterceptorAuthenticateErrTokenExpired() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/Ping"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, fmt.Errorf("%w: "+jwt.ErrTokenExpired.Error(), errorhandler.ErrUnauthenticated))
+		Return(authorization, fmt.Errorf("%w: "+jwt.ErrTokenExpired.Error(), errorhandler.ErrUnauthenticated))
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -224,9 +240,13 @@ func (suite *InterceptorSuite) TestInterceptorAuthenticateErrRefreshTokenNotExis
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/Ping"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, errorhandler.ErrNoRefreshToken)
+		Return(authorization, errorhandler.ErrNoRefreshToken)
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -262,9 +282,13 @@ func (suite *InterceptorSuite) TestInterceptorAuthenticateErrScopeNotExist() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/Ping"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, errorhandler.ErrScopeNotExist)
+		Return(authorization, errorhandler.ErrScopeNotExist)
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -300,9 +324,13 @@ func (suite *InterceptorSuite) TestInterceptorAuthenticateErrNoRows() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/Ping"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, fmt.Errorf("%w: "+errorhandler.ErrNoRows.Error(), errorhandler.ErrUnauthenticated))
+		Return(authorization, fmt.Errorf("%w: "+errorhandler.ErrNoRows.Error(), errorhandler.ErrUnauthenticated))
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -338,9 +366,13 @@ func (suite *InterceptorSuite) TestInterceptorAuthenticateErrScopeNotAllowed() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/Ping"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, errorhandler.ErrOutOfScopes)
+		Return(authorization, errorhandler.ErrOutOfScopes)
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -376,9 +408,13 @@ func (suite *InterceptorSuite) TestInterceptorAuthenticateError() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/Ping"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, errors.New("got error"))
+		Return(authorization, errors.New("got error"))
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -415,9 +451,13 @@ func (suite *InterceptorSuite) TestInterceptorStreamAllowed() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/PingList"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, errorhandler.ErrInWhitelist)
+		Return(authorization, errorhandler.ErrInWhitelist)
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -456,9 +496,13 @@ func (suite *InterceptorSuite) TestInterceptorStream() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/PingList"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, nil)
+		Return(authorization, nil)
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),
@@ -497,9 +541,13 @@ func (suite *InterceptorSuite) TestInterceptorStreamAuthenticateError() {
 	ctx := context.Background()
 	clientID := []byte("clientID")
 	fullPath := "/mwitkow.testproto.TestService/PingList"
+
+	authorization := &testIAuthorization{}
+	authorization.On("GetID").Return(clientID)
+	authorization.On("GetClaim").Return(mock.AnythingOfType("interface{}"))
 	authenticate := &testIAuthenticate{}
 	authenticate.On("Authenticate", mock.AnythingOfType("func() (string, error)"), fullPath).
-		Return(clientID, errors.New("got error"))
+		Return(authorization, errors.New("got error"))
 
 	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryServerInterceptor(authenticate)),

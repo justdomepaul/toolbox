@@ -11,7 +11,8 @@ type AuthorizationSuite struct {
 
 func (suite *AuthorizationSuite) TestGetConstant() {
 	suite.Equal("authorization", AuthorizationKey)
-	suite.Equal("authorization-client", AuthorizationClientKey)
+	suite.Equal("authorization-id", AuthorizationID)
+	suite.Equal("authorization-claim", AuthorizationClaim)
 	suite.Equal("Bearer ", AuthorizationType)
 	suite.Equal("tk", QueryAuthKey)
 	suite.Equal("tokenClaims", AuthTokenKey)

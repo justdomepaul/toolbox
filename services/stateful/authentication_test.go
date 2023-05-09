@@ -66,11 +66,11 @@ func (suite *CommonAuthenticationSuite) TestAuthenticateMethod() {
 	suite.NoError(config.LoadFromEnv(&gOp))
 	service, err := NewAuthentication(gOp, suite.jwt)
 	suite.NoError(err)
-	resultID, err := service.Authenticate(ctx, func() (string, error) {
+	result, err := service.Authenticate(ctx, func() (string, error) {
 		return suite.token, nil
 	}, "/pong")
 	suite.NoError(err)
-	suite.Equal(suite.id, resultID)
+	suite.Equal(suite.id, result.GetID())
 }
 
 func (suite *CommonAuthenticationSuite) TestAuthenticateMethodInWhiteList() {

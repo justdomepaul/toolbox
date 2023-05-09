@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func CreateServer(logger *zap.Logger, grpcOption config.GRPC, authenticateService services.Authenticate) *grpc.Server {
+func CreateServer(logger *zap.Logger, grpcOption config.GRPC, authenticateService services.IAuthenticate) *grpc.Server {
 	opts := []grpc_zap.Option{
 		grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {
 			return zap.Int64("grpc.time_ns", duration.Nanoseconds())

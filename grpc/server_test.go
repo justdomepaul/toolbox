@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"github.com/justdomepaul/toolbox/config"
+	"github.com/justdomepaul/toolbox/services"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -14,9 +15,9 @@ type testAuthenticate struct {
 	mock.Mock
 }
 
-func (t *testAuthenticate) Authenticate(ctx context.Context, tokenFn func() (string, error), fullMethod string) (clientID []byte, err error) {
+func (t *testAuthenticate) Authenticate(ctx context.Context, tokenFn func() (string, error), fullMethod string) (authorization services.IAuthorization, err error) {
 	args := t.Called(ctx, tokenFn, fullMethod)
-	return args.Get(0).([]byte), args.Error(1)
+	return args.Get(0).(services.IAuthorization), args.Error(1)
 }
 
 type ServerSuite struct {
