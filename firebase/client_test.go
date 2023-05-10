@@ -22,7 +22,9 @@ func (suite *ClientSuite) SetupSuite() {
 
 func (suite *ClientSuite) TestNewApp() {
 	app, errClient := NewClient(context.Background(), config.Firebase{
-		FirebaseProjectID: "microbee",
+		FirebaseConfigJSON:       "",
+		FirebaseConfigJSONBase64: "",
+		FirebaseProjectID:        "microbee",
 	})
 	suite.NoError(errClient)
 	suite.T().Log(app)
