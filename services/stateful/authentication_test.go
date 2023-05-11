@@ -82,11 +82,12 @@ func (suite *CommonAuthenticationSuite) TestAuthenticateMethodInWhiteList() {
 	}
 	service, err := NewAuthentication(gOp, suite.jwt)
 	suite.NoError(err)
-	resultID, err := service.Authenticate(ctx, func() (string, error) {
+	result, err := service.Authenticate(ctx, func() (string, error) {
 		return suite.token, nil
 	}, "/ping")
 	suite.ErrorIs(err, errorhandler.ErrInWhitelist)
-	suite.Empty(resultID)
+	suite.NotNil(result)
+	suite.Empty(result)
 }
 
 func (suite *CommonAuthenticationSuite) TestAuthenticateMethodTokenFnError() {

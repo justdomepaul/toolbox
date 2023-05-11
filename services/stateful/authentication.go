@@ -50,7 +50,7 @@ type Authentication struct {
 func (s *Authentication) Authenticate(ctx context.Context, tokenFn func() (string, error), fullMethod string) (authorization services.IAuthorization, err error) {
 	for _, term := range s.allowedList {
 		if strings.HasPrefix(fullMethod, term) {
-			return nil, errorhandler.ErrInWhitelist
+			return NewAuthorization(nil, nil), errorhandler.ErrInWhitelist
 		}
 	}
 	token, err := tokenFn()
