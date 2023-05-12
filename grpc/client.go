@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
+	"github.com/cockroachdb/errors"
 	"github.com/justdomepaul/toolbox/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
@@ -61,6 +64,38 @@ func CreateClient(domain string, option config.GRPC) (IClientConn, error) {
 				}),
 			),
 		)
+	}
+	if option.TLSNil {
+		options = append(options,
+			grpc.WithTransportCredentials(credentials.NewTLS(nil)),
+		)
+	}
+	if option.TLS {
+		if option.TLSPemCert == "" && option.TLSPemCertBase64 == "" {
+			return nil, errors.New("gRPC TLS Pem Cert Data Not Found")
+		}
+		if option.TLSPemCert != "" && option.TLSPemCertBase64 == "" {
+			cp := x509.NewCertPool()
+			if !cp.AppendCertsFromPEM([]byte(option.TLSPemCert)) {
+				return nil, errors.New("gRPC TLS Pem Cert format error")
+			}
+			options = append(options,
+				grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(cp, "")),
+			)
+		}
+		if option.TLSPemCert == "" && option.TLSPemCertBase64 != "" {
+			tlsPemCert, err := base64.StdEncoding.DecodeString(option.TLSPemCertBase64)
+			if err != nil {
+				return nil, err
+			}
+			cp := x509.NewCertPool()
+			if !cp.AppendCertsFromPEM(tlsPemCert) {
+				return nil, errors.New("gRPC TLS Pem Cert format error")
+			}
+			options = append(options,
+				grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(cp, "")),
+			)
+		}
 	}
 	if option.ALTS {
 		options = append(options, grpc.WithTransportCredentials(alts.NewClientCreds(alts.DefaultClientOptions())))
